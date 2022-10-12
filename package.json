@@ -1,0 +1,41 @@
+{
+  "name": "new",
+  "version": "0.0.1",
+  "license": "MIT",
+  "description": "",
+  "author": "HiDeoo <github@hideoo.dev> (https://hideoo.dev)",
+  "type": "module",
+  "scripts": {
+    "lint": "prettier -c . && eslint . --cache --max-warnings=0 && tsc --noEmit",
+    "prepare": "husky install",
+    "test": "echo \"Error: no test implemented.\" && exit 1"
+  },
+  "devDependencies": {
+    "@hideoo/eslint-config": "0.9.0",
+    "@hideoo/prettier-config": "0.1.1",
+    "@hideoo/tsconfig": "0.1.0",
+    "eslint": "8.25.0",
+    "husky": "8.0.1",
+    "lint-staged": "13.0.3",
+    "prettier": "2.7.1",
+    "typescript": "4.8.4"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "packageManager": "pnpm@7.13.4",
+  "private": true,
+  "sideEffects": false,
+  "keywords": [],
+  "homepage": "https://github.com/HiDeoo/new",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HiDeoo/new.git"
+  },
+  "bugs": "https://github.com/HiDeoo/new/issues",
+  "prettier": "@hideoo/prettier-config",
+  "lint-staged": {
+    "**/*": "prettier -w -u --cache",
+    "**/*.{js,jsx,ts,tsx,cjs,mjs}": "eslint --cache --max-warnings=0"
+  }
+}
