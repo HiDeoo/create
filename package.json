@@ -6,21 +6,32 @@
   "author": "HiDeoo <github@hideoo.dev> (https://hideoo.dev)",
   "main": "dist/index.js",
   "scripts": {
-    "build": "node esbuild.config.mjs",
+    "build": "pnpm clean && node esbuild.config.mjs",
     "lint": "prettier -c . && eslint . --cache --max-warnings=0 && tsc --noEmit",
-    "test": "echo \"Error: no test implemented.\" && exit 1",
+    "test": "pnpm clean && tsc && node dist/tests/index.js",
+    "clean": "rimraf dist",
     "prepare": "husky install"
+  },
+  "dependencies": {
+    "fast-glob": "3.2.12"
   },
   "devDependencies": {
     "@hideoo/eslint-config": "0.9.0",
     "@hideoo/prettier-config": "0.1.1",
     "@hideoo/tsconfig": "0.1.0",
+    "@types/mocha": "10.0.0",
+    "@types/node": "16.11.65",
+    "@types/sinon": "10.0.13",
     "@types/vscode": "1.72.0",
+    "@vscode/test-electron": "2.1.5",
     "esbuild": "0.15.10",
     "eslint": "8.25.0",
     "husky": "8.0.1",
     "lint-staged": "13.0.3",
+    "mocha": "10.0.0",
     "prettier": "2.7.1",
+    "rimraf": "3.0.2",
+    "sinon": "14.0.1",
     "typescript": "4.8.4"
   },
   "engines": {
