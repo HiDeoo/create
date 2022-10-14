@@ -5,11 +5,11 @@ const dev = args.includes('--dev')
 
 esbuild.buildSync({
   bundle: true,
-  entryPoints: ['./src'],
+  entryPoints: ['./src/extension.ts'],
   external: ['vscode'],
   format: 'cjs',
   minify: !dev,
-  outfile: 'dist/index.js',
+  outfile: 'dist/extension.js',
   platform: 'node',
   sourcemap: dev,
 })

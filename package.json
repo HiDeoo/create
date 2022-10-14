@@ -4,7 +4,7 @@
   "license": "MIT",
   "description": "",
   "author": "HiDeoo <github@hideoo.dev> (https://hideoo.dev)",
-  "main": "dist/index.js",
+  "main": "dist/extension.js",
   "scripts": {
     "build": "pnpm clean && node esbuild.config.mjs",
     "lint": "prettier -c . && eslint . --cache --max-warnings=0 && tsc --noEmit",
@@ -64,7 +64,7 @@
       {
         "key": "tab",
         "command": "new.tab",
-        "when": "new.autoCompletionActive"
+        "when": "new.autoCompletionAvailable"
       }
     ]
   },

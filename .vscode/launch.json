@@ -6,7 +6,7 @@
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--disable-extensions", "--extensionDevelopmentPath=${workspaceFolder}"],
+      "args": ["${workspaceFolder}/fixtures", "--disable-extensions", "--extensionDevelopmentPath=${workspaceFolder}"],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
     }

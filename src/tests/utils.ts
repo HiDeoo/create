@@ -33,7 +33,7 @@ export function runSuite(testsRoot: string): Promise<void> {
   })
 }
 
-export async function withQuikPick(run: (getQuickPick: () => QuickPick<QuickPickItem>) => Promise<void>) {
+export async function withPathPicker(run: (withPathPickerParams: WithPathPickerRunParams) => Promise<void>) {
   let quickPick: QuickPick<QuickPickItem> | undefined
 
   const createQuickPickStub = stub(window, 'createQuickPick').callsFake(() => {
@@ -42,15 +42,30 @@ export async function withQuikPick(run: (getQuickPick: () => QuickPick<QuickPick
     return quickPick
   })
 
-  function getQuickPick() {
-    if (!quickPick) {
-      throw new Error('QuickPick not found.')
-    }
-
-    return quickPick
+  function isPathPickerAvailable() {
+    return typeof quickPick !== 'undefined'
   }
 
-  await run(getQuickPick)
+  function pathPickerBaseDirectoriesEqual(baseDirectories: string[]) {
+    return (
+      quickPick?.items.every((item, index) => {
+        const isEqual = item.label === baseDirectories[index]
+
+        if (!isEqual) {
+          console.error(`Path picker base directory '${item.label}' does not equal '${baseDirectories[index]}'.`)
+        }
+
+        return isEqual
+      }) ?? false
+    )
+  }
+
+  await run({ isPathPickerAvailable, pathPickerBaseDirectoriesEqual })
 
   createQuickPickStub.restore()
+}
+
+interface WithPathPickerRunParams {
+  isPathPickerAvailable: () => boolean
+  pathPickerBaseDirectoriesEqual: (baseDirectories: string[]) => boolean
 }

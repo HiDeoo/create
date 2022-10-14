@@ -1,19 +1,22 @@
 import { commands, window, workspace, type ExtensionContext } from 'vscode'
 
-import { Picker } from './libs/Picker'
+import { getWorkspacesBaseDirectories } from './libs/fs'
+import { PathPicker } from './PathPicker'
 
 export function activate(context: ExtensionContext): void {
-  let picker: Picker | undefined
+  let picker: PathPicker | undefined
 
   context.subscriptions.push(
-    commands.registerCommand('new.pick', () => {
-      if (!workspace.workspaceFolders || workspace.workspaceFolders.length === 0) {
+    commands.registerCommand('new.pick', async () => {
+      const workspaceFolders = workspace.workspaceFolders
+
+      if (!workspaceFolders || workspaceFolders.length === 0) {
         window.showErrorMessage('No workspace folder found, please open a folder first.')
 
         return
       }
 
-      picker = new Picker()
+      picker = new PathPicker(getWorkspacesBaseDirectories(workspaceFolders))
       picker.onPick = onPick
       picker.onDispose = () => (picker = undefined)
     }),

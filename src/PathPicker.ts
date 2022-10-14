@@ -1,15 +1,6 @@
 import { type QuickPick, type QuickPickItem, window, commands } from 'vscode'
 
-// FIXME(HiDeoo)
-const debugItems = [
-  { label: 'Debug 1' },
-  { label: 'Debug 2' },
-  { label: 'Debug 3' },
-  { label: 'Debug 4' },
-  { label: 'Debug 5' },
-]
-
-export class Picker {
+export class PathPicker {
   onDispose?: () => void
   onPick?: (value: string) => void
 
@@ -17,39 +8,49 @@ export class Picker {
   #didAutoComplete = false
   #quickPick: QuickPick<QuickPickItem>
 
-  constructor() {
+  constructor(private readonly baseDirectories: Promise<string[]>) {
     this.#quickPick = window.createQuickPick()
     this.#quickPick.onDidAccept(this.#quickPickDidAccept)
     this.#quickPick.onDidHide(this.#quickPickDidHide)
 
+    // TODO(HiDeoo) placeholder
     this.#show()
-
-    this.#quickPick.items = debugItems
   }
 
   #dispose() {
-    this.#setAutoCompletionActive(false)
+    this.#setAutoCompletionAvailable(false)
 
     this.#quickPick.dispose()
 
     this.onDispose?.()
   }
 
-  #show() {
-    this.#setAutoCompletionActive(true)
+  async #show() {
+    this.#setAutoCompletionAvailable(true)
 
+    this.#quickPick.busy = true
     this.#quickPick.show()
+
+    if (this.#didAutoComplete) {
+      return
+    }
+
+    const baseDirectories = await this.baseDirectories
+
+    this.#quickPick.busy = false
+    this.#quickPick.items = baseDirectories.map((baseDirectory) => ({ label: `/${baseDirectory}` }))
   }
 
-  #setAutoCompletionActive(active: boolean) {
-    commands.executeCommand('setContext', 'new.autoCompletionActive', active)
+  #setAutoCompletionAvailable(active: boolean) {
+    commands.executeCommand('setContext', 'new.autoCompletionAvailable', active)
   }
 
   #switchToInputPicker(options?: { autoCompletion?: boolean; preserveValue?: boolean }) {
+    this.#quickPick.busy = false
     this.#quickPick.items = []
 
     if (options?.autoCompletion === false) {
-      this.#setAutoCompletionActive(false)
+      this.#setAutoCompletionAvailable(false)
     }
 
     if (options?.preserveValue !== true) {
@@ -82,6 +83,7 @@ export class Picker {
   }
 
   #didPick() {
+    // TODO(HiDeoo)
     this.onPick?.(`${this.#baseDirectory} - ${this.#quickPick.value}`)
 
     this.#dispose()
@@ -96,5 +98,9 @@ export class Picker {
     this.#baseDirectory = undefined
 
     this.#switchToInputPicker({ preserveValue: true })
+
+    // TODO(HiDeoo) Handle auto completion
+    // TODO(HiDeoo) Handle multiple auto completion
+    // TODO(HiDeoo) Busy state?
   }
 }

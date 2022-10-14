@@ -12,11 +12,17 @@ async function runTestsWithFixtures(extensionDevelopmentPath: string, suite: str
     throw new Error(`Could not find fixtures for test suite '${suite}'.`)
   }
 
+  const launchArgs = ['--disable-extensions']
+
+  if (suite !== 'no-workspace') {
+    launchArgs.unshift(fixtureTestsPath)
+  }
+
   try {
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath,
-      launchArgs: suite !== 'no-workspace' ? [fixtureTestsPath, '--disable-extensions'] : ['--disable-extensions'],
+      launchArgs,
     })
   } catch (error) {
     console.error(`Failed to run tests with fixtures for suite '${suite}': ${error}.`)
