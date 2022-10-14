@@ -9,6 +9,7 @@ it('should list ordered base directories', () =>
 
     expect(
       pathPickerBaseDirectoriesEqual([
+        '/.github',
         '/folder-1',
         '/folder-2',
         '/folder-2/folder-2-1',
