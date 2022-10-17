@@ -1,17 +1,17 @@
 import { expect } from 'chai'
 import { type SinonSpy, spy } from 'sinon'
-import { commands, type MessageItem, window } from 'vscode'
+import { type MessageItem, window } from 'vscode'
 
-import { withPathPicker } from '../utils'
+import { withExtension } from '../utils'
 
-it('should bail out and show an error', () =>
-  withPathPicker(async ({ isPathPickerAvailable }) => {
+it('should bail out and show an error with no workspace', () =>
+  withExtension(async ({ isPathPickerAvailable, triggerExtension }) => {
     const showErrorMessageSpy = spy(window, 'showErrorMessage') as unknown as SinonSpy<
       [message: string],
       Thenable<MessageItem | undefined>
     >
 
-    await commands.executeCommand('new.pick')
+    await triggerExtension(false)
 
     expect(showErrorMessageSpy.calledOnceWith('No workspace folder found, please open a folder first.')).to.be.true
     expect(isPathPickerAvailable()).to.be.false

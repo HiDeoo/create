@@ -5,12 +5,14 @@ specifiers:
   '@hideoo/prettier-config': 0.1.1
   '@hideoo/tsconfig': 0.1.0
   '@types/chai': 4.3.3
+  '@types/common-tags': 1.8.1
   '@types/mocha': 10.0.0
   '@types/node': 16.11.65
   '@types/sinon': 10.0.13
   '@types/vscode': 1.72.0
   '@vscode/test-electron': 2.1.5
   chai: 4.3.6
+  common-tags: 1.8.2
   esbuild: 0.15.10
   eslint: 8.25.0
   fast-glob: 3.2.12
@@ -30,12 +32,14 @@ devDependencies:
   '@hideoo/prettier-config': 0.1.1
   '@hideoo/tsconfig': 0.1.0
   '@types/chai': 4.3.3
+  '@types/common-tags': 1.8.1
   '@types/mocha': 10.0.0
   '@types/node': 16.11.65
   '@types/sinon': 10.0.13
   '@types/vscode': 1.72.0
   '@vscode/test-electron': 2.1.5
   chai: 4.3.6
+  common-tags: 1.8.2
   esbuild: 0.15.10
   eslint: 8.25.0
   husky: 8.0.1
@@ -271,6 +275,10 @@ packages:
 
   /@types/chai/4.3.3:
     resolution: {integrity: sha512-hC7OMnszpxhZPduX+m+nrx+uFoLkWOMiR4oa/AZF3MuSETYTZmFfJAHqZEM8MVlvfG7BEUcgvtwoCTxBp6hm3g==}
+    dev: true
+
+  /@types/common-tags/1.8.1:
+    resolution: {integrity: sha512-20R/mDpKSPWdJs5TOpz3e7zqbeCNuMCPhV7Yndk9KU2Rbij2r5W4RzwDPkzC+2lzUqXYu9rFzTktCBnDjHuNQg==}
     dev: true
 
   /@types/json-schema/7.0.11:
@@ -822,6 +830,11 @@ packages:
   /commander/9.4.1:
     resolution: {integrity: sha512-5EEkTNyHNGFPD2H+c/dXXfQZYa/scCKasxWcXJaWnNJ99pnQN9Vnmqow+p+PlFPE63Q6mThaZws1T+HxfpgtPw==}
     engines: {node: ^12.20.0 || >=14}
+    dev: true
+
+  /common-tags/1.8.2:
+    resolution: {integrity: sha512-gk/Z852D2Wtb//0I+kRFNKKE9dIIVirjoqPoA1wJU+XePVXZfGeBpk45+A1rKO4Q43prqWBNY/MiIeRLbPWUaA==}
+    engines: {node: '>=4.0.0'}
     dev: true
 
   /concat-map/0.0.1:

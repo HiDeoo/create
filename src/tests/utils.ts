@@ -1,7 +1,7 @@
 import glob from 'fast-glob'
 import Mocha from 'mocha'
 import { stub } from 'sinon'
-import { type QuickPick, type QuickPickItem, window } from 'vscode'
+import { type QuickPick, type QuickPickItem, window, commands } from 'vscode'
 
 export function runSuite(testsRoot: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -33,7 +33,7 @@ export function runSuite(testsRoot: string): Promise<void> {
   })
 }
 
-export async function withPathPicker(run: (withPathPickerParams: WithPathPickerRunParams) => Promise<void>) {
+export async function withExtension(run: (withExtensionHelpers: WithExtensionHelpers) => Promise<void>) {
   let quickPick: QuickPick<QuickPickItem> | undefined
 
   const createQuickPickStub = stub(window, 'createQuickPick').callsFake(() => {
@@ -46,13 +46,16 @@ export async function withPathPicker(run: (withPathPickerParams: WithPathPickerR
     return typeof quickPick !== 'undefined'
   }
 
-  function pathPickerBaseDirectoriesEqual(baseDirectories: string[]) {
+  function pathPickerBaseDirectoriesEqual(expectedBaseDirectories: string[]) {
     return (
-      quickPick?.items.every((item, index) => {
-        const isEqual = item.label === baseDirectories[index]
+      expectedBaseDirectories.every((expectedBaseDirectory, index) => {
+        const baseDirectory = quickPick?.items[index]
+        const isEqual = baseDirectory?.label === expectedBaseDirectory
 
         if (!isEqual) {
-          console.error(`Path picker base directory '${item.label}' does not equal '${baseDirectories[index]}'.`)
+          console.error(
+            `Path picker base directory '${baseDirectory?.label}' does not equal '${expectedBaseDirectory}'.`
+          )
         }
 
         return isEqual
@@ -60,12 +63,23 @@ export async function withPathPicker(run: (withPathPickerParams: WithPathPickerR
     )
   }
 
-  await run({ isPathPickerAvailable, pathPickerBaseDirectoriesEqual })
+  async function triggerExtension(waitForPathPicker = true) {
+    await commands.executeCommand('new.pick')
+
+    if (waitForPathPicker) {
+      while (!isPathPickerAvailable() || quickPick?.busy) {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      }
+    }
+  }
+
+  await run({ isPathPickerAvailable, pathPickerBaseDirectoriesEqual, triggerExtension })
 
   createQuickPickStub.restore()
 }
 
-interface WithPathPickerRunParams {
+interface WithExtensionHelpers {
   isPathPickerAvailable: () => boolean
   pathPickerBaseDirectoriesEqual: (baseDirectories: string[]) => boolean
+  triggerExtension: (waitForPathPicker?: boolean) => Promise<void>
 }
