@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import { type QuickPick, window, commands } from 'vscode'
 
-import { type BaseDirectory } from './libs/fs'
+import { isQualifiedBaseDirectory, type BaseDirectory } from './libs/fs'
 
 export class PathPicker {
   onDispose?: () => void
@@ -92,7 +92,7 @@ export class PathPicker {
       return
     }
 
-    if (!this.#baseDirectory) {
+    if (!isQualifiedBaseDirectory(this.#baseDirectory)) {
       return
     }
 

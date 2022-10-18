@@ -4,7 +4,15 @@ import path from 'node:path'
 import glob from 'fast-glob'
 import Mocha from 'mocha'
 import { stub } from 'sinon'
-import { type QuickPick, type QuickPickItem, window, commands, EventEmitter, workspace } from 'vscode'
+import {
+  type QuickPick,
+  type QuickPickItem,
+  window,
+  commands,
+  EventEmitter,
+  workspace,
+  QuickPickItemKind,
+} from 'vscode'
 
 export function runSuite(testsRoot: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -54,9 +62,11 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   }
 
   function pathPickerBaseDirectoriesEqual(expectedBaseDirectories: string[]) {
+    const quickPickItems = (quickPick?.items ?? []).filter((item) => item.kind !== QuickPickItemKind.Separator)
+
     return (
       expectedBaseDirectories.every((expectedBaseDirectory, index) => {
-        const baseDirectory = quickPick?.items[index]
+        const baseDirectory = quickPickItems[index]
         const isEqual = baseDirectory?.label === expectedBaseDirectory
 
         if (!isEqual) {

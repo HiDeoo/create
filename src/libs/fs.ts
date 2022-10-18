@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import glob from 'fast-glob'
-import { workspace, type WorkspaceFolder } from 'vscode'
+import { QuickPickItemKind, workspace, type WorkspaceFolder } from 'vscode'
 
 export async function getWorkspacesBaseDirectories(workspaceFolders: readonly WorkspaceFolder[]) {
   const isMultiRootWorkspace = workspaceFolders.length > 1
@@ -20,6 +20,15 @@ export async function getWorkspacesBaseDirectories(workspaceFolders: readonly Wo
     })
 
     baseDirectories.push(
+      {
+        description: 'workspace root',
+        label: isMultiRootWorkspace ? path.join(path.posix.sep, workspaceFolder.name) : path.posix.sep,
+        path: workspaceFolder.uri.fsPath,
+      },
+      {
+        kind: QuickPickItemKind.Separator,
+        label: '',
+      },
       ...workspaceDirectories.sort().map((directory) => ({
         label: isMultiRootWorkspace
           ? path.join(path.posix.sep, workspaceFolder.name, path.posix.sep, directory)
@@ -52,6 +61,12 @@ export async function createNewFileOrFolder(fileOrFolderPath: string) {
 
 export function isFolderPath(fileOrFolderPath: string) {
   return fileOrFolderPath.endsWith(path.posix.sep)
+}
+
+export function isQualifiedBaseDirectory(
+  baseDirectory: BaseDirectory | undefined
+): baseDirectory is QualifiedBaseDirectory {
+  return typeof baseDirectory !== 'undefined' && typeof (baseDirectory as QualifiedBaseDirectory).path !== 'undefined'
 }
 
 async function getExcludeGlobs(workspaceFolder: WorkspaceFolder) {
@@ -105,7 +120,15 @@ async function fileOrFolderExists(fileOrFolderPath: string) {
   }
 }
 
-export interface BaseDirectory {
+export type BaseDirectory = QualifiedBaseDirectory | BaseDirectorySeparator
+
+interface QualifiedBaseDirectory {
+  description?: string
   label: string
   path: string
+}
+
+interface BaseDirectorySeparator {
+  label: string
+  kind: QuickPickItemKind
 }

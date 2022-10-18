@@ -30,6 +30,7 @@ describe('with a single-folder workspace', () => {
 
           expect(
             pathPickerBaseDirectoriesEqual([
+              '/',
               '/.github',
               '/folder-1',
               '/folder-1/random',
@@ -70,6 +71,7 @@ describe('with a single-folder workspace', () => {
 
           expect(
             pathPickerBaseDirectoriesEqual([
+              '/',
               '/.github',
               '/folder-2',
               '/folder-2/folder-2-1',
@@ -83,7 +85,17 @@ describe('with a single-folder workspace', () => {
   })
 
   describe('new files and folders', () => {
-    // TODO(HiDeoo) should create a file at the root
+    it('should create a file at the workspace root', () =>
+      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const baseDirectory = '/'
+        const value = 'new-file'
+
+        await pickWithBaseDirectory(baseDirectory, value)
+
+        expectNewFileOrFolder(path.join(baseDirectory, value), 'file')
+      }))
 
     it('should create a file', () =>
       withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {

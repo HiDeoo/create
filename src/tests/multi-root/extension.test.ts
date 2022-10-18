@@ -34,7 +34,9 @@ describe('with a multi-root workspace', () => {
 
           expect(
             pathPickerBaseDirectoriesEqual([
+              '/folder-1',
               '/folder-1/random',
+              '/folder-2',
               '/folder-2/folder-2-1',
               '/folder-2/folder-2-2',
               '/folder-2/folder-2-2/folder-2-2-1',
@@ -62,7 +64,9 @@ describe('with a multi-root workspace', () => {
 
           expect(
             pathPickerBaseDirectoriesEqual([
+              '/folder-1',
               '/folder-1/random',
+              '/folder-2',
               '/folder-2/folder-2-1',
               '/folder-2/folder-2-2',
               '/folder-2/folder-2-2/folder-2-2-1',
@@ -74,7 +78,27 @@ describe('with a multi-root workspace', () => {
   })
 
   describe('new files and folders', () => {
-    // TODO(HiDeoo) should create a file at both roots
+    it('should create a file at the root of the first workspace folder', () =>
+      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const value = 'new-file'
+
+        await pickWithBaseDirectory('/folder-1', value)
+
+        expectNewFileOrFolder(value, 'file', 0)
+      }))
+
+    it('should create a file at the root of the second workspace folder', () =>
+      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const value = 'new-file'
+
+        await pickWithBaseDirectory('/folder-2', value)
+
+        expectNewFileOrFolder(value, 'file', 1)
+      }))
 
     it('should create a file in the proper workspace folder', () =>
       withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
