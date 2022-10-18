@@ -84,7 +84,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
       quickPick.value = value
       quickPickAcceptEventEmitter?.fire()
 
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      await new Promise((resolve) => setTimeout(resolve, 100))
     }
   }
 
@@ -93,62 +93,62 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
 
     if (waitForPathPicker) {
       while (!isPathPickerAvailable() || quickPick?.busy) {
-        await new Promise((resolve) => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 50))
       }
     }
   }
 
   await run({
-    expectNewFile,
-    expectNewFolder,
     isPathPickerAvailable,
     pathPickerBaseDirectoriesEqual,
     pickWithBaseDirectory,
     triggerExtension,
   })
 
+  await commands.executeCommand('workbench.action.closeAllEditors')
+
   createQuickPickStub.restore()
 }
 
-function expectNewFile(newFilePath: string, workspaceIndex = 0) {
-  const workspaceFolder = workspace.workspaceFolders?.[workspaceIndex]?.uri.fsPath
+export async function emptyWorkspaceFolder(workspaceFolderPath: string) {
+  const fileOrFolders = await fs.promises.readdir(workspaceFolderPath)
 
-  if (!workspaceFolder) {
-    throw new Error('The workspace folder is not defined.')
-  }
+  for (const fileOrFolder of fileOrFolders) {
+    const fileOrFolderPath = path.join(workspaceFolderPath, fileOrFolder)
+    const stats = await fs.promises.stat(fileOrFolderPath)
 
-  const fixturePath = path.join(workspaceFolder, newFilePath)
-
-  if (!fs.existsSync(fixturePath)) {
-    throw new Error(`New file at '${fixturePath}' not found.`)
-  }
-
-  if (fs.statSync(fixturePath).isDirectory()) {
-    throw new Error(`'${fixturePath}' is a directory, expected a file.`)
+    await (stats.isDirectory()
+      ? fs.promises.rm(fileOrFolderPath, { recursive: true })
+      : fs.promises.unlink(fileOrFolderPath))
   }
 }
 
-function expectNewFolder(newFolderPath: string, workspaceIndex = 0) {
+export function getWorkspaceRelativePath(filePath: string, workspaceIndex = 0) {
   const workspaceFolder = workspace.workspaceFolders?.[workspaceIndex]?.uri.fsPath
 
   if (!workspaceFolder) {
     throw new Error('The workspace folder is not defined.')
   }
 
-  const fixturePath = path.join(workspaceFolder, newFolderPath)
+  return path.join(workspaceFolder, filePath)
+}
 
-  if (!fs.existsSync(fixturePath)) {
-    throw new Error(`New folder at '${fixturePath}' not found.`)
+export function expectNewFileOrFolder(relativeFileOrFolderPath: string, type: 'file' | 'folder', workspaceIndex = 0) {
+  const fileOrFolderPath = getWorkspaceRelativePath(relativeFileOrFolderPath, workspaceIndex)
+
+  if (!fs.existsSync(fileOrFolderPath)) {
+    throw new Error(`New file or folder at '${fileOrFolderPath}' not found.`)
   }
 
-  if (fs.statSync(fixturePath).isFile()) {
-    throw new Error(`'${fixturePath}' is a file, expected a folder.`)
+  if (
+    (type === 'file' && fs.statSync(fileOrFolderPath).isDirectory()) ||
+    (type === 'folder' && fs.statSync(fileOrFolderPath).isFile())
+  ) {
+    throw new Error(`'${fileOrFolderPath}' is not a ${type}.`)
   }
 }
 
 interface WithExtensionHelpers {
-  expectNewFile: (newFilePath: string, workspaceIndex?: number) => void
-  expectNewFolder: (newFolderPath: string, workspaceIndex?: number) => void
   isPathPickerAvailable: () => boolean
   pathPickerBaseDirectoriesEqual: (baseDirectories: string[]) => boolean
   pickWithBaseDirectory: (baseDirectory: string, value: string) => Promise<void>

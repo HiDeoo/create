@@ -39,7 +39,7 @@ export async function createNewFileOrFolder(fileOrFolderPath: string) {
     return
   }
 
-  if (fileOrFolderPath.endsWith(path.posix.sep)) {
+  if (isFolderPath(fileOrFolderPath)) {
     return fs.mkdir(fileOrFolderPath, { recursive: true })
   }
 
@@ -48,6 +48,10 @@ export async function createNewFileOrFolder(fileOrFolderPath: string) {
   await fs.mkdir(folderPath, { recursive: true })
 
   return fs.appendFile(fileOrFolderPath, '')
+}
+
+export function isFolderPath(fileOrFolderPath: string) {
+  return fileOrFolderPath.endsWith(path.posix.sep)
 }
 
 async function getExcludeGlobs(workspaceFolder: WorkspaceFolder) {

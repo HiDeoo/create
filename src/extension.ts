@@ -1,6 +1,7 @@
 import { commands, window, workspace, type ExtensionContext } from 'vscode'
 
 import { createNewFileOrFolder, getWorkspacesBaseDirectories } from './libs/fs'
+import { openFile } from './libs/vsc'
 import { PathPicker } from './PathPicker'
 
 export function activate(context: ExtensionContext): void {
@@ -29,6 +30,7 @@ export function activate(context: ExtensionContext): void {
 async function onPick(pickedPath: string) {
   try {
     await createNewFileOrFolder(pickedPath)
+    await openFile(pickedPath)
   } catch (error) {
     console.error(error)
 

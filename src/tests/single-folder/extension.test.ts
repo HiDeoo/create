@@ -4,9 +4,9 @@ import path from 'node:path'
 
 import { expect } from 'chai'
 import { stripIndents } from 'common-tags'
-import { workspace } from 'vscode'
+import { window, workspace } from 'vscode'
 
-import { withExtension } from '../utils'
+import { emptyWorkspaceFolder, expectNewFileOrFolder, getWorkspaceRelativePath, withExtension } from '../utils'
 
 const workspaceFolder = workspace.workspaceFolders?.[0]?.uri.fsPath
 assert(workspaceFolder, 'The workspace folder is not defined.')
@@ -18,8 +18,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await fs.rm(workspaceFolder, { recursive: true })
-  await fs.mkdir(workspaceFolder, { recursive: true })
+  await emptyWorkspaceFolder(workspaceFolder)
 })
 
 describe('with a single-folder workspace', () => {
@@ -87,7 +86,7 @@ describe('with a single-folder workspace', () => {
     // TODO(HiDeoo) should create a file at the root
 
     it('should create a file', () =>
-      withExtension(async ({ expectNewFile, pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
         await triggerExtension()
 
         const baseDirectory = '/folder-1'
@@ -95,11 +94,11 @@ describe('with a single-folder workspace', () => {
 
         await pickWithBaseDirectory(baseDirectory, value)
 
-        expectNewFile(path.join(baseDirectory, value))
+        expectNewFileOrFolder(path.join(baseDirectory, value), 'file')
       }))
 
     it('should create a file and missing parent folders', () =>
-      withExtension(async ({ expectNewFile, pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
         await triggerExtension()
 
         const baseDirectory = '/folder-2/folder-2-2/folder-2-2-1'
@@ -107,11 +106,25 @@ describe('with a single-folder workspace', () => {
 
         await pickWithBaseDirectory(baseDirectory, value)
 
-        expectNewFile(path.join(baseDirectory, value))
+        expectNewFileOrFolder(path.join(baseDirectory, value), 'file')
+      }))
+
+    it('should open a new file', () =>
+      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const baseDirectory = '/folder-1'
+        const value = 'new-file'
+
+        await pickWithBaseDirectory(baseDirectory, value)
+
+        expect(window.activeTextEditor?.document.uri.fsPath).to.equal(
+          getWorkspaceRelativePath(path.join(baseDirectory, value))
+        )
       }))
 
     it('should create a folder', () =>
-      withExtension(async ({ expectNewFolder, pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
         await triggerExtension()
 
         const baseDirectory = '/folder-1'
@@ -119,11 +132,11 @@ describe('with a single-folder workspace', () => {
 
         await pickWithBaseDirectory(baseDirectory, value)
 
-        expectNewFolder(path.join(baseDirectory, value))
+        expectNewFileOrFolder(path.join(baseDirectory, value), 'folder')
       }))
 
-    it('should create a file and missing parent folders', () =>
-      withExtension(async ({ expectNewFolder, pickWithBaseDirectory, triggerExtension }) => {
+    it('should create a folder and missing parent folders', () =>
+      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
         await triggerExtension()
 
         const baseDirectory = '/folder-2/folder-2-2/folder-2-2-1'
@@ -131,7 +144,19 @@ describe('with a single-folder workspace', () => {
 
         await pickWithBaseDirectory(baseDirectory, value)
 
-        expectNewFolder(path.join(baseDirectory, value))
+        expectNewFileOrFolder(path.join(baseDirectory, value), 'folder')
+      }))
+
+    it('should not open a new folder', () =>
+      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const baseDirectory = '/folder-1'
+        const value = 'folder-1-1/'
+
+        await pickWithBaseDirectory(baseDirectory, value)
+
+        expect(window.activeTextEditor?.document.uri.fsPath).to.be.undefined
       }))
   })
 })
