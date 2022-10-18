@@ -1,6 +1,6 @@
 import { commands, window, workspace, type ExtensionContext } from 'vscode'
 
-import { getWorkspacesBaseDirectories } from './libs/fs'
+import { createNewFileOrFolder, getWorkspacesBaseDirectories } from './libs/fs'
 import { PathPicker } from './PathPicker'
 
 export function activate(context: ExtensionContext): void {
@@ -26,6 +26,12 @@ export function activate(context: ExtensionContext): void {
   )
 }
 
-function onPick(value: string) {
-  console.error(value)
+async function onPick(pickedPath: string) {
+  try {
+    await createNewFileOrFolder(pickedPath)
+  } catch (error) {
+    console.error(error)
+
+    // TODO(HiDeoo)
+  }
 }

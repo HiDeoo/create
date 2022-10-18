@@ -5,7 +5,7 @@ import glob from 'fast-glob'
 import { workspace, type WorkspaceFolder } from 'vscode'
 
 export async function getWorkspacesBaseDirectories(workspaceFolders: readonly WorkspaceFolder[]) {
-  const baseDirectories: string[] = []
+  const baseDirectories: BaseDirectory[] = []
 
   for (const workspaceFolder of workspaceFolders) {
     const excludeGlobs = await getExcludeGlobs(workspaceFolder)
@@ -17,10 +17,28 @@ export async function getWorkspacesBaseDirectories(workspaceFolders: readonly Wo
       onlyDirectories: true,
     })
 
-    baseDirectories.push(...workspaceDirectories.sort())
+    baseDirectories.push(
+      ...workspaceDirectories
+        .sort()
+        .map((directory) => ({ label: `/${directory}`, path: path.join(workspaceFolder.uri.fsPath, directory) }))
+    )
   }
 
   return baseDirectories
+}
+
+export async function createNewFileOrFolder(fileOrFolderPath: string) {
+  const exists = await fileOrFolderExists(fileOrFolderPath)
+
+  if (exists) {
+    return
+  }
+
+  const folderPath = path.dirname(fileOrFolderPath)
+
+  await fs.mkdir(folderPath, { recursive: true })
+
+  return fs.appendFile(fileOrFolderPath, '')
 }
 
 async function getExcludeGlobs(workspaceFolder: WorkspaceFolder) {
@@ -62,4 +80,19 @@ async function getGitignoreExcludeGlobs(workspaceFolder: WorkspaceFolder) {
   }
 
   return excludeGlobs
+}
+
+async function fileOrFolderExists(fileOrFolderPath: string) {
+  try {
+    await fs.access(fileOrFolderPath)
+
+    return true
+  } catch {
+    return false
+  }
+}
+
+export interface BaseDirectory {
+  label: string
+  path: string
 }

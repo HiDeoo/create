@@ -1,14 +1,18 @@
-import { type QuickPick, type QuickPickItem, window, commands } from 'vscode'
+import path from 'node:path'
+
+import { type QuickPick, window, commands } from 'vscode'
+
+import { type BaseDirectory } from './libs/fs'
 
 export class PathPicker {
   onDispose?: () => void
   onPick?: (value: string) => void
 
-  #baseDirectory: string | undefined
+  #baseDirectory: BaseDirectory | undefined
   #didAutoComplete = false
-  #quickPick: QuickPick<QuickPickItem>
+  #quickPick: QuickPick<BaseDirectory>
 
-  constructor(private readonly baseDirectories: Promise<string[]>) {
+  constructor(private readonly baseDirectories: Promise<BaseDirectory[]>) {
     this.#quickPick = window.createQuickPick()
     this.#quickPick.onDidAccept(this.#quickPickDidAccept)
     this.#quickPick.onDidHide(this.#quickPickDidHide)
@@ -38,7 +42,7 @@ export class PathPicker {
     const baseDirectories = await this.baseDirectories
 
     this.#quickPick.busy = false
-    this.#quickPick.items = baseDirectories.map((baseDirectory) => ({ label: `/${baseDirectory}` }))
+    this.#quickPick.items = baseDirectories
   }
 
   #setAutoCompletionAvailable(active: boolean) {
@@ -68,7 +72,7 @@ export class PathPicker {
         return
       }
 
-      this.#baseDirectory = selectedItem.label
+      this.#baseDirectory = selectedItem
       this.#switchToInputPicker({ autoCompletion: false })
 
       return
@@ -83,8 +87,19 @@ export class PathPicker {
   }
 
   #didPick() {
-    // TODO(HiDeoo)
-    this.onPick?.(`${this.#baseDirectory} - ${this.#quickPick.value}`)
+    if (this.#didAutoComplete) {
+      // TODO(HiDeoo)
+      return
+    }
+
+    if (!this.#baseDirectory) {
+      return
+    }
+
+    const pickedPath = path.join(this.#baseDirectory.path, this.#quickPick.value)
+
+    // TODO(HiDeoo) Busy during onPick?
+    this.onPick?.(pickedPath)
 
     this.#dispose()
   }
