@@ -109,8 +109,8 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   createQuickPickStub.restore()
 }
 
-function expectNewFile(newFilePath: string) {
-  const workspaceFolder = workspace.workspaceFolders?.[0]?.uri.fsPath
+function expectNewFile(newFilePath: string, workspaceIndex = 0) {
+  const workspaceFolder = workspace.workspaceFolders?.[workspaceIndex]?.uri.fsPath
 
   if (!workspaceFolder) {
     throw new Error('The workspace folder is not defined.')
@@ -128,7 +128,7 @@ function expectNewFile(newFilePath: string) {
 }
 
 interface WithExtensionHelpers {
-  expectNewFile: (newFilePath: string) => void
+  expectNewFile: (newFilePath: string, workspaceIndex?: number) => void
   isPathPickerAvailable: () => boolean
   pathPickerBaseDirectoriesEqual: (baseDirectories: string[]) => boolean
   pickWithBaseDirectory: (baseDirectory: string, value: string) => Promise<void>

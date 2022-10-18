@@ -5,6 +5,8 @@ import glob from 'fast-glob'
 import { workspace, type WorkspaceFolder } from 'vscode'
 
 export async function getWorkspacesBaseDirectories(workspaceFolders: readonly WorkspaceFolder[]) {
+  const isMultiRootWorkspace = workspaceFolders.length > 1
+
   const baseDirectories: BaseDirectory[] = []
 
   for (const workspaceFolder of workspaceFolders) {
@@ -18,9 +20,12 @@ export async function getWorkspacesBaseDirectories(workspaceFolders: readonly Wo
     })
 
     baseDirectories.push(
-      ...workspaceDirectories
-        .sort()
-        .map((directory) => ({ label: `/${directory}`, path: path.join(workspaceFolder.uri.fsPath, directory) }))
+      ...workspaceDirectories.sort().map((directory) => ({
+        label: isMultiRootWorkspace
+          ? path.join(path.posix.sep, workspaceFolder.name, path.posix.sep, directory)
+          : path.join(path.posix.sep, directory),
+        path: path.join(workspaceFolder.uri.fsPath, directory),
+      }))
     )
   }
 

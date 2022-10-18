@@ -12,10 +12,25 @@ async function runTestsWithFixtures(extensionDevelopmentPath: string, suite: str
 
   let testDirectory: string | undefined
 
-  if (suite !== 'no-workspace') {
+  if (suite !== 'no-folder') {
     testDirectory = await fs.mkdtemp(path.join(os.tmpdir(), `new-${suite}-`))
 
-    launchArgs.unshift(testDirectory)
+    if (suite === 'single-folder') {
+      // Test a workspace with a single folder.
+      launchArgs.unshift(testDirectory)
+    } else if (suite === 'multi-root') {
+      // Test a workspace with multiple folders.
+      const codeWorkspacePath = path.join(testDirectory, 'test.code-workspace')
+
+      await fs.writeFile(
+        codeWorkspacePath,
+        JSON.stringify({
+          folders: [{ path: path.join(testDirectory, 'folder-1') }, { path: path.join(testDirectory, 'folder-2') }],
+        })
+      )
+
+      launchArgs.unshift(codeWorkspacePath)
+    }
   }
 
   try {
