@@ -100,6 +100,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
 
   await run({
     expectNewFile,
+    expectNewFolder,
     isPathPickerAvailable,
     pathPickerBaseDirectoriesEqual,
     pickWithBaseDirectory,
@@ -127,8 +128,27 @@ function expectNewFile(newFilePath: string, workspaceIndex = 0) {
   }
 }
 
+function expectNewFolder(newFolderPath: string, workspaceIndex = 0) {
+  const workspaceFolder = workspace.workspaceFolders?.[workspaceIndex]?.uri.fsPath
+
+  if (!workspaceFolder) {
+    throw new Error('The workspace folder is not defined.')
+  }
+
+  const fixturePath = path.join(workspaceFolder, newFolderPath)
+
+  if (!fs.existsSync(fixturePath)) {
+    throw new Error(`New folder at '${fixturePath}' not found.`)
+  }
+
+  if (fs.statSync(fixturePath).isFile()) {
+    throw new Error(`'${fixturePath}' is a file, expected a folder.`)
+  }
+}
+
 interface WithExtensionHelpers {
   expectNewFile: (newFilePath: string, workspaceIndex?: number) => void
+  expectNewFolder: (newFolderPath: string, workspaceIndex?: number) => void
   isPathPickerAvailable: () => boolean
   pathPickerBaseDirectoriesEqual: (baseDirectories: string[]) => boolean
   pickWithBaseDirectory: (baseDirectory: string, value: string) => Promise<void>

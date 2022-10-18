@@ -98,7 +98,7 @@ describe('with a single-folder workspace', () => {
         expectNewFile(path.join(baseDirectory, value))
       }))
 
-    it('should create a file and necessary folders', () =>
+    it('should create a file and missing parent folders', () =>
       withExtension(async ({ expectNewFile, pickWithBaseDirectory, triggerExtension }) => {
         await triggerExtension()
 
@@ -108,6 +108,30 @@ describe('with a single-folder workspace', () => {
         await pickWithBaseDirectory(baseDirectory, value)
 
         expectNewFile(path.join(baseDirectory, value))
+      }))
+
+    it('should create a folder', () =>
+      withExtension(async ({ expectNewFolder, pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const baseDirectory = '/folder-1'
+        const value = 'folder-1-1/'
+
+        await pickWithBaseDirectory(baseDirectory, value)
+
+        expectNewFolder(path.join(baseDirectory, value))
+      }))
+
+    it('should create a file and missing parent folders', () =>
+      withExtension(async ({ expectNewFolder, pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const baseDirectory = '/folder-2/folder-2-2/folder-2-2-1'
+        const value = 'folder-2-2-1-1/folder-2-2-1-1-1/'
+
+        await pickWithBaseDirectory(baseDirectory, value)
+
+        expectNewFolder(path.join(baseDirectory, value))
       }))
   })
 })

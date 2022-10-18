@@ -39,6 +39,10 @@ export async function createNewFileOrFolder(fileOrFolderPath: string) {
     return
   }
 
+  if (fileOrFolderPath.endsWith(path.posix.sep)) {
+    return fs.mkdir(fileOrFolderPath, { recursive: true })
+  }
+
   const folderPath = path.dirname(fileOrFolderPath)
 
   await fs.mkdir(folderPath, { recursive: true })
@@ -78,7 +82,7 @@ async function getGitignoreExcludeGlobs(workspaceFolder: WorkspaceFolder) {
         continue
       }
 
-      excludeGlobs.push(gitignoreEntry.startsWith('/') ? gitignoreEntry.slice(1) : `**/${gitignoreEntry}`)
+      excludeGlobs.push(gitignoreEntry.startsWith(path.posix.sep) ? gitignoreEntry.slice(1) : `**/${gitignoreEntry}`)
     }
   } catch {
     // We can safely ignore this error if the file doesn't exist or is not readable.

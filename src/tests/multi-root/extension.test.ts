@@ -78,7 +78,18 @@ describe('with a multi-root workspace', () => {
   describe('new files and folders', () => {
     // TODO(HiDeoo) should create a file at both roots
 
-    it('should create a file and necessary folders in the proper workspace folder', () =>
+    it('should create a file in the proper workspace folder', () =>
+      withExtension(async ({ expectNewFile, pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const value = 'new-file'
+
+        await pickWithBaseDirectory('/folder-2/folder-2-1', value)
+
+        expectNewFile(path.join('/folder-2-1', value), 1)
+      }))
+
+    it('should create a file and missing parent folders in the proper workspace folder', () =>
       withExtension(async ({ expectNewFile, pickWithBaseDirectory, triggerExtension }) => {
         await triggerExtension()
 
@@ -87,6 +98,28 @@ describe('with a multi-root workspace', () => {
         await pickWithBaseDirectory('/folder-2/folder-2-1', value)
 
         expectNewFile(path.join('/folder-2-1', value), 1)
+      }))
+
+    it('should create a folder in the proper workspace folder', () =>
+      withExtension(async ({ expectNewFolder, pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const value = 'folder-2-1-1/'
+
+        await pickWithBaseDirectory('/folder-2/folder-2-1', value)
+
+        expectNewFolder(path.join('/folder-2-1', value), 1)
+      }))
+
+    it('should create a folder and missing parent folders in the proper workspace folder', () =>
+      withExtension(async ({ expectNewFolder, pickWithBaseDirectory, triggerExtension }) => {
+        await triggerExtension()
+
+        const value = 'folder-2-1-1/folder-2-1-1-1/'
+
+        await pickWithBaseDirectory('/folder-2/folder-2-1', value)
+
+        expectNewFolder(path.join('/folder-2-1', value), 1)
       }))
   })
 })
