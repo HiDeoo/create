@@ -135,6 +135,17 @@ describe('with a multi-root workspace', () => {
         await expectOpenedFile(path.join('/folder-2-1', inputValue), workspaceFolderB)
       }))
 
+    it('should open an existing file', () =>
+      withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
+        await triggerExtension()
+
+        const inputValue = 'file-2-2-1'
+
+        pickWithMenuItem('/folder-2/folder-2-2', inputValue)
+
+        await expectOpenedFile(path.join('/folder-2-2', inputValue), workspaceFolderB)
+      }))
+
     it('should create a folder in the proper workspace folder', () =>
       withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
         await triggerExtension()

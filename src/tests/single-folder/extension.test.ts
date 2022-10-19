@@ -135,6 +135,18 @@ describe('with a single-folder workspace', () => {
         await expectOpenedFile(path.join(menuItem, inputValue))
       }))
 
+    it('should open an existing file', () =>
+      withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
+        await triggerExtension()
+
+        const menuItem = '/folder-3'
+        const inputValue = '.file-3-1'
+
+        pickWithMenuItem(menuItem, inputValue)
+
+        await expectOpenedFile(path.join(menuItem, inputValue))
+      }))
+
     it('should create a folder', () =>
       withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
         await triggerExtension()
