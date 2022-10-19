@@ -8,6 +8,7 @@ import invariant from 'tiny-invariant'
 import {
   commands,
   EventEmitter,
+  type InputBox,
   type QuickPick,
   type QuickPickItem,
   QuickPickItemKind,
@@ -48,7 +49,9 @@ export function runSuite(testsRoot: string): Promise<void> {
 
 export async function withExtension(run: (withExtensionHelpers: WithExtensionHelpers) => Promise<void>) {
   let picker: QuickPick<QuickPickItem> | undefined
+  let input: InputBox | undefined
   let pickerAcceptEventEmitter: EventEmitter<void> | undefined
+  let inputAcceptEventEmitter: EventEmitter<void> | undefined
 
   const createQuickPickStub = stub(window, 'createQuickPick').callsFake(() => {
     picker = createQuickPickStub.wrappedMethod()
@@ -57,6 +60,15 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     stub(picker, 'onDidAccept').callsFake(pickerAcceptEventEmitter.event)
 
     return picker
+  })
+
+  const createInputBoxStub = stub(window, 'createInputBox').callsFake(() => {
+    input = createInputBoxStub.wrappedMethod()
+
+    inputAcceptEventEmitter = new EventEmitter<void>()
+    stub(input, 'onDidAccept').callsFake(inputAcceptEventEmitter.event)
+
+    return input
   })
 
   function isPickerAvailable() {
@@ -87,7 +99,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     )
   }
 
-  function pickWithMenuItem(menuItem: string, inputValue: string) {
+  async function pickWithMenuItem(menuItem: string, inputValue: string) {
     if (picker) {
       const selectedMenuItem = picker.items.find((item) => item.label === menuItem)
 
@@ -96,8 +108,10 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
       picker.selectedItems = [selectedMenuItem]
       pickerAcceptEventEmitter?.fire()
 
-      picker.value = inputValue
-      pickerAcceptEventEmitter?.fire()
+      if (input) {
+        input.value = inputValue
+        inputAcceptEventEmitter?.fire()
+      }
     }
   }
 
@@ -123,6 +137,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   await commands.executeCommand('workbench.action.closeAllEditors')
 
   createQuickPickStub.restore()
+  createInputBoxStub.restore()
 }
 
 export async function emptyWorkspaceFolder(workspaceFolder: WorkspaceFolder) {
