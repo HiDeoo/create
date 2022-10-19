@@ -4,14 +4,16 @@ import path from 'node:path'
 import glob from 'fast-glob'
 import Mocha from 'mocha'
 import { stub } from 'sinon'
+import invariant from 'tiny-invariant'
 import {
-  type QuickPick,
-  type QuickPickItem,
-  window,
   commands,
   EventEmitter,
-  workspace,
+  type QuickPick,
+  type QuickPickItem,
   QuickPickItemKind,
+  window,
+  workspace,
+  type WorkspaceFolder,
 } from 'vscode'
 
 export function runSuite(testsRoot: string): Promise<void> {
@@ -45,54 +47,57 @@ export function runSuite(testsRoot: string): Promise<void> {
 }
 
 export async function withExtension(run: (withExtensionHelpers: WithExtensionHelpers) => Promise<void>) {
-  let quickPick: QuickPick<QuickPickItem> | undefined
-  let quickPickAcceptEventEmitter: EventEmitter<void> | undefined
+  let picker: QuickPick<QuickPickItem> | undefined
+  let pickerAcceptEventEmitter: EventEmitter<void> | undefined
 
   const createQuickPickStub = stub(window, 'createQuickPick').callsFake(() => {
-    quickPick = createQuickPickStub.wrappedMethod()
+    picker = createQuickPickStub.wrappedMethod()
 
-    quickPickAcceptEventEmitter = new EventEmitter<void>()
-    stub(quickPick, 'onDidAccept').callsFake(quickPickAcceptEventEmitter.event)
+    pickerAcceptEventEmitter = new EventEmitter<void>()
+    stub(picker, 'onDidAccept').callsFake(pickerAcceptEventEmitter.event)
 
-    return quickPick
+    return picker
   })
 
-  function isPathPickerAvailable() {
-    return typeof quickPick !== 'undefined'
+  function isPickerAvailable() {
+    return typeof picker !== 'undefined'
   }
 
-  function pathPickerBaseDirectoriesEqual(expectedBaseDirectories: string[]) {
-    const quickPickItems = (quickPick?.items ?? []).filter((item) => item.kind !== QuickPickItemKind.Separator)
-
+  // --- represents a PathPickerMenuSeparatorItem
+  function pickerMenuItemsEqual(expectedMenuItems: (string | { label: string; description: string })[]) {
     return (
-      expectedBaseDirectories.every((expectedBaseDirectory, index) => {
-        const baseDirectory = quickPickItems[index]
-        const isEqual = baseDirectory?.label === expectedBaseDirectory
+      (expectedMenuItems.length === picker?.items.length &&
+        expectedMenuItems.every((expectedMenuItem, index) => {
+          const pickerMenuItem = picker?.items[index]
+          const isEqual =
+            expectedMenuItem === '---'
+              ? pickerMenuItem?.kind === QuickPickItemKind.Separator
+              : typeof expectedMenuItem === 'string'
+              ? expectedMenuItem === pickerMenuItem?.label
+              : expectedMenuItem.label === pickerMenuItem?.label &&
+                expectedMenuItem.description === pickerMenuItem?.description
 
-        if (!isEqual) {
-          console.error(
-            `Path picker base directory '${baseDirectory?.label}' does not equal '${expectedBaseDirectory}'.`
-          )
-        }
+          if (!isEqual) {
+            console.error(`Path picker menu item '${pickerMenuItem?.label}' does not equal '${expectedMenuItem}'.`)
+          }
 
-        return isEqual
-      }) ?? false
+          return isEqual
+        })) ??
+      false
     )
   }
 
-  async function pickWithBaseDirectory(baseDirectory: string, value: string) {
-    if (quickPick) {
-      const selectedBaseDirectory = quickPick.items.find((item) => item.label === baseDirectory)
+  async function pickWithMenuItem(menuItem: string, inputValue: string) {
+    if (picker) {
+      const selectedMenuItem = picker.items.find((item) => item.label === menuItem)
 
-      if (!selectedBaseDirectory) {
-        throw new Error(`Could not find base directory to select '${baseDirectory}'.`)
-      }
+      invariant(selectedMenuItem, `Could not find menu item to select '${menuItem}'.`)
 
-      quickPick.selectedItems = [selectedBaseDirectory]
-      quickPickAcceptEventEmitter?.fire()
+      picker.selectedItems = [selectedMenuItem]
+      pickerAcceptEventEmitter?.fire()
 
-      quickPick.value = value
-      quickPickAcceptEventEmitter?.fire()
+      picker.value = inputValue
+      pickerAcceptEventEmitter?.fire()
 
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
@@ -102,16 +107,18 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     await commands.executeCommand('new.pick')
 
     if (waitForPathPicker) {
-      while (!isPathPickerAvailable() || quickPick?.busy) {
+      while (!isPickerAvailable() || picker?.busy) {
         await new Promise((resolve) => setTimeout(resolve, 50))
       }
     }
   }
 
+  await commands.executeCommand('workbench.action.closeAllEditors')
+
   await run({
-    isPathPickerAvailable,
-    pathPickerBaseDirectoriesEqual,
-    pickWithBaseDirectory,
+    isPickerAvailable,
+    pickerMenuItemsEqual,
+    pickWithMenuItem,
     triggerExtension,
   })
 
@@ -120,11 +127,11 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   createQuickPickStub.restore()
 }
 
-export async function emptyWorkspaceFolder(workspaceFolderPath: string) {
-  const fileOrFolders = await fs.promises.readdir(workspaceFolderPath)
+export async function emptyWorkspaceFolder(workspaceFolder: WorkspaceFolder) {
+  const fileOrFolders = await fs.promises.readdir(workspaceFolder.uri.fsPath)
 
   for (const fileOrFolder of fileOrFolders) {
-    const fileOrFolderPath = path.join(workspaceFolderPath, fileOrFolder)
+    const fileOrFolderPath = path.join(workspaceFolder.uri.fsPath, fileOrFolder)
     const stats = await fs.promises.stat(fileOrFolderPath)
 
     await (stats.isDirectory()
@@ -133,34 +140,30 @@ export async function emptyWorkspaceFolder(workspaceFolderPath: string) {
   }
 }
 
-export function getWorkspaceRelativePath(filePath: string, workspaceIndex = 0) {
-  const workspaceFolder = workspace.workspaceFolders?.[workspaceIndex]?.uri.fsPath
+export function getWorkspaceRelativePath(filePath: string, workspaceFolder = workspace.workspaceFolders?.[0]) {
+  invariant(workspaceFolder, 'The workspace folder does not exist.')
 
-  if (!workspaceFolder) {
-    throw new Error('The workspace folder is not defined.')
-  }
-
-  return path.join(workspaceFolder, filePath)
+  return path.join(workspaceFolder.uri.fsPath, filePath)
 }
 
-export function expectNewFileOrFolder(relativeFileOrFolderPath: string, type: 'file' | 'folder', workspaceIndex = 0) {
-  const fileOrFolderPath = getWorkspaceRelativePath(relativeFileOrFolderPath, workspaceIndex)
+export function expectNewFileOrFolder(
+  relativeFileOrFolderPath: string,
+  type: 'file' | 'folder',
+  workspaceFolder = workspace.workspaceFolders?.[0]
+) {
+  const fileOrFolderPath = getWorkspaceRelativePath(relativeFileOrFolderPath, workspaceFolder)
 
-  if (!fs.existsSync(fileOrFolderPath)) {
-    throw new Error(`New file or folder at '${fileOrFolderPath}' not found.`)
-  }
-
-  if (
-    (type === 'file' && fs.statSync(fileOrFolderPath).isDirectory()) ||
-    (type === 'folder' && fs.statSync(fileOrFolderPath).isFile())
-  ) {
-    throw new Error(`'${fileOrFolderPath}' is not a ${type}.`)
-  }
+  invariant(fs.existsSync(fileOrFolderPath), `New file or folder at '${fileOrFolderPath}' not found.`)
+  invariant(
+    (type === 'file' && fs.statSync(fileOrFolderPath).isFile()) ||
+      (type === 'folder' && fs.statSync(fileOrFolderPath).isDirectory()),
+    `'${fileOrFolderPath}' is not a ${type}.`
+  )
 }
 
 interface WithExtensionHelpers {
-  isPathPickerAvailable: () => boolean
-  pathPickerBaseDirectoriesEqual: (baseDirectories: string[]) => boolean
-  pickWithBaseDirectory: (baseDirectory: string, value: string) => Promise<void>
+  isPickerAvailable: () => boolean
+  pickerMenuItemsEqual: (expectedMenuItems: (string | { label: string; description: string })[]) => boolean
+  pickWithMenuItem: (menuItem: string, inputValue: string) => Promise<void>
   triggerExtension: (waitForPathPicker?: boolean) => Promise<void>
 }

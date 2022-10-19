@@ -8,13 +8,13 @@ import { window, workspace } from 'vscode'
 
 import { emptyWorkspaceFolder, expectNewFileOrFolder, getWorkspaceRelativePath, withExtension } from '../utils'
 
-const workspaceFolder = workspace.workspaceFolders?.[0]?.uri.fsPath
+const workspaceFolder = workspace.workspaceFolders?.[0]
 assert(workspaceFolder, 'The workspace folder is not defined.')
 
 const fixturePath = path.join(__dirname, '../../../fixtures')
 
 beforeEach(async () => {
-  await fs.cp(fixturePath, workspaceFolder, { recursive: true })
+  await fs.cp(fixturePath, workspaceFolder.uri.fsPath, { recursive: true })
 })
 
 afterEach(async () => {
@@ -22,15 +22,16 @@ afterEach(async () => {
 })
 
 describe('with a single-folder workspace', () => {
-  describe('base directories', () => {
+  describe('path picker menu items', () => {
     describe('with no .gitignore', () => {
-      it('should list ordered base directories', () =>
-        withExtension(async ({ pathPickerBaseDirectoriesEqual, triggerExtension }) => {
+      it('should list ordered folders', () =>
+        withExtension(async ({ pickerMenuItemsEqual, triggerExtension }) => {
           await triggerExtension()
 
           expect(
-            pathPickerBaseDirectoriesEqual([
-              '/',
+            pickerMenuItemsEqual([
+              { label: '/', description: 'workspace root' },
+              '---',
               '/.github',
               '/folder-1',
               '/folder-1/random',
@@ -65,13 +66,14 @@ describe('with a single-folder workspace', () => {
         await fs.rm(gitignorePath)
       })
 
-      it('should list ordered base directories', () =>
-        withExtension(async ({ pathPickerBaseDirectoriesEqual, triggerExtension }) => {
+      it('should list ordered folders', () =>
+        withExtension(async ({ pickerMenuItemsEqual, triggerExtension }) => {
           await triggerExtension()
 
           expect(
-            pathPickerBaseDirectoriesEqual([
-              '/',
+            pickerMenuItemsEqual([
+              { label: '/', description: 'workspace root' },
+              '---',
               '/.github',
               '/folder-2',
               '/folder-2/folder-2-1',
@@ -86,87 +88,87 @@ describe('with a single-folder workspace', () => {
 
   describe('new files and folders', () => {
     it('should create a file at the workspace root', () =>
-      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
         await triggerExtension()
 
-        const baseDirectory = '/'
-        const value = 'new-file'
+        const menuItem = '/'
+        const inputValue = 'new-file'
 
-        await pickWithBaseDirectory(baseDirectory, value)
+        await pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(baseDirectory, value), 'file')
+        expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
       }))
 
     it('should create a file', () =>
-      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
         await triggerExtension()
 
-        const baseDirectory = '/folder-1'
-        const value = 'new-file'
+        const menuItem = '/folder-1'
+        const inputValue = 'new-file'
 
-        await pickWithBaseDirectory(baseDirectory, value)
+        await pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(baseDirectory, value), 'file')
+        expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
       }))
 
     it('should create a file and missing parent folders', () =>
-      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
         await triggerExtension()
 
-        const baseDirectory = '/folder-2/folder-2-2/folder-2-2-1'
-        const value = 'folder-2-2-1-1/folder-2-2-1-1-1/new-file'
+        const menuItem = '/folder-2/folder-2-2/folder-2-2-1'
+        const inputValue = 'folder-2-2-1-1/folder-2-2-1-1-1/new-file'
 
-        await pickWithBaseDirectory(baseDirectory, value)
+        await pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(baseDirectory, value), 'file')
+        expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
       }))
 
     it('should open a new file', () =>
-      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
         await triggerExtension()
 
-        const baseDirectory = '/folder-1'
-        const value = 'new-file'
+        const menuItem = '/folder-1'
+        const inputValue = 'new-file'
 
-        await pickWithBaseDirectory(baseDirectory, value)
+        await pickWithMenuItem(menuItem, inputValue)
 
         expect(window.activeTextEditor?.document.uri.fsPath).to.equal(
-          getWorkspaceRelativePath(path.join(baseDirectory, value))
+          getWorkspaceRelativePath(path.join(menuItem, inputValue))
         )
       }))
 
     it('should create a folder', () =>
-      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
         await triggerExtension()
 
-        const baseDirectory = '/folder-1'
-        const value = 'folder-1-1/'
+        const menuItem = '/folder-1'
+        const inputValue = 'folder-1-1/'
 
-        await pickWithBaseDirectory(baseDirectory, value)
+        await pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(baseDirectory, value), 'folder')
+        expectNewFileOrFolder(path.join(menuItem, inputValue), 'folder')
       }))
 
     it('should create a folder and missing parent folders', () =>
-      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
         await triggerExtension()
 
-        const baseDirectory = '/folder-2/folder-2-2/folder-2-2-1'
-        const value = 'folder-2-2-1-1/folder-2-2-1-1-1/'
+        const menuItem = '/folder-2/folder-2-2/folder-2-2-1'
+        const inputValue = 'folder-2-2-1-1/folder-2-2-1-1-1/'
 
-        await pickWithBaseDirectory(baseDirectory, value)
+        await pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(baseDirectory, value), 'folder')
+        expectNewFileOrFolder(path.join(menuItem, inputValue), 'folder')
       }))
 
     it('should not open a new folder', () =>
-      withExtension(async ({ pickWithBaseDirectory, triggerExtension }) => {
+      withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
         await triggerExtension()
 
-        const baseDirectory = '/folder-1'
-        const value = 'folder-1-1/'
+        const menuItem = '/folder-1'
+        const inputValue = 'folder-1-1/'
 
-        await pickWithBaseDirectory(baseDirectory, value)
+        await pickWithMenuItem(menuItem, inputValue)
 
         expect(window.activeTextEditor?.document.uri.fsPath).to.be.undefined
       }))

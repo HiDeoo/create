@@ -1,21 +1,53 @@
 import path from 'node:path'
 
-import { type QuickPick, window, commands } from 'vscode'
+import { type QuickPick, window, commands, QuickPickItemKind } from 'vscode'
 
-import { isQualifiedBaseDirectory, type BaseDirectory } from './libs/fs'
-
+/**
+ * ┌──────────┐
+ * │  picker  │
+ * ├──────────┴────────────────────────────────────────────────────┐
+ * │ ┌───────────────────────────────────────────────────────────┐ │
+ * │ │ inputValue                                                │ │
+ * │ └───────────────────────────────────────────────────────────┘ │
+ * │ ┌──────┐                                                      │
+ * │ │ menu │                                                      │
+ * │ ├──────┴────────────────────────────────────────────────────┐ │
+ * │ │ ┌───────────────────────────────────────────────────────┐ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ └───────────────────────────────────────────────────────┘ │ │
+ * │ │ ────────────────── MenuSeparatorItem  ─────────────────── │ │
+ * │ │ ┌───────────────────────────────────────────────────────┐ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ └───────────────────────────────────────────────────────┘ │ │
+ * │ └───────────────────────────────────────────────────────────┘ │
+ * └───────────────────────────────────────────────────────────────┘
+ */
 export class PathPicker {
   onDispose?: () => void
-  onPick?: (value: string) => void
+  onPick?: (newPath: string) => void
 
-  #baseDirectory: BaseDirectory | undefined
   #didAutoComplete = false
-  #quickPick: QuickPick<BaseDirectory>
+  #picker: QuickPick<PathPickerMenuItem>
+  #selectedMenuFolderItem: PathPickerMenuFolderItem | undefined
 
-  constructor(private readonly baseDirectories: Promise<BaseDirectory[]>) {
-    this.#quickPick = window.createQuickPick()
-    this.#quickPick.onDidAccept(this.#quickPickDidAccept)
-    this.#quickPick.onDidHide(this.#quickPickDidHide)
+  static isPathPickerMenuFolderItem(item: PathPickerMenuItem): item is PathPickerMenuFolderItem {
+    return (item as PathPickerMenuSeparatorItem).kind !== QuickPickItemKind.Separator
+  }
+
+  constructor(private readonly menuItems: Promise<PathPickerMenuItem[]>) {
+    this.#picker = window.createQuickPick()
+    this.#picker.onDidAccept(this.#pickerDidAccept)
+    this.#picker.onDidHide(this.#pickerDidHide)
 
     // TODO(HiDeoo) placeholder
     this.#show()
@@ -24,7 +56,7 @@ export class PathPicker {
   #dispose() {
     this.#setAutoCompletionAvailable(false)
 
-    this.#quickPick.dispose()
+    this.#picker.dispose()
 
     this.onDispose?.()
   }
@@ -32,17 +64,17 @@ export class PathPicker {
   async #show() {
     this.#setAutoCompletionAvailable(true)
 
-    this.#quickPick.busy = true
-    this.#quickPick.show()
+    this.#picker.busy = true
+    this.#picker.show()
 
     if (this.#didAutoComplete) {
       return
     }
 
-    const baseDirectories = await this.baseDirectories
+    const menuItems = await this.menuItems
 
-    this.#quickPick.busy = false
-    this.#quickPick.items = baseDirectories
+    this.#picker.busy = false
+    this.#picker.items = menuItems
   }
 
   #setAutoCompletionAvailable(active: boolean) {
@@ -50,35 +82,35 @@ export class PathPicker {
   }
 
   #switchToInputPicker(options?: { autoCompletion?: boolean; preserveValue?: boolean }) {
-    this.#quickPick.busy = false
-    this.#quickPick.items = []
+    this.#picker.busy = false
+    this.#picker.items = []
 
     if (options?.autoCompletion === false) {
       this.#setAutoCompletionAvailable(false)
     }
 
     if (options?.preserveValue !== true) {
-      this.#quickPick.value = ''
+      this.#picker.value = ''
     }
   }
 
-  #quickPickDidAccept = () => {
-    if (!this.#didAutoComplete && !this.#baseDirectory) {
-      const selectedItem = this.#quickPick.selectedItems[0]
+  #pickerDidAccept = () => {
+    if (!this.#didAutoComplete && !this.#selectedMenuFolderItem) {
+      const menuSelectedItem = this.#picker.selectedItems[0]
 
-      if (!selectedItem) {
+      if (!menuSelectedItem || !PathPicker.isPathPickerMenuFolderItem(menuSelectedItem)) {
         this.#dispose()
 
         return
       }
 
-      this.#baseDirectory = selectedItem
+      this.#selectedMenuFolderItem = menuSelectedItem
       this.#switchToInputPicker({ autoCompletion: false })
 
       return
     }
 
-    if (this.#quickPick.value.length === 0) {
+    if (this.#picker.value.length === 0) {
       // TODO(HiDeoo) Show warning?
       return
     }
@@ -92,25 +124,25 @@ export class PathPicker {
       return
     }
 
-    if (!isQualifiedBaseDirectory(this.#baseDirectory)) {
+    if (!this.#selectedMenuFolderItem) {
       return
     }
 
-    const pickedPath = path.join(this.#baseDirectory.path, this.#quickPick.value)
+    const newPath = path.join(this.#selectedMenuFolderItem.path, this.#picker.value)
 
     // TODO(HiDeoo) Busy during onPick?
-    this.onPick?.(pickedPath)
+    this.onPick?.(newPath)
 
     this.#dispose()
   }
 
-  #quickPickDidHide = () => {
+  #pickerDidHide = () => {
     this.#dispose()
   }
 
   autoComplete() {
     this.#didAutoComplete = true
-    this.#baseDirectory = undefined
+    this.#selectedMenuFolderItem = undefined
 
     this.#switchToInputPicker({ preserveValue: true })
 
@@ -118,4 +150,17 @@ export class PathPicker {
     // TODO(HiDeoo) Handle multiple auto completion
     // TODO(HiDeoo) Busy state?
   }
+}
+
+export type PathPickerMenuItem = PathPickerMenuFolderItem | PathPickerMenuSeparatorItem
+
+interface PathPickerMenuFolderItem {
+  description?: string
+  label: string
+  path: string
+}
+
+interface PathPickerMenuSeparatorItem {
+  label: string
+  kind: QuickPickItemKind.Separator
 }

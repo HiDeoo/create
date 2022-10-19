@@ -15,8 +15,8 @@ async function runTestsWithFixtures(extensionDevelopmentPath: string, suite: str
   if (suite !== 'no-folder') {
     testDirectory = await fs.mkdtemp(path.join(os.tmpdir(), `new-${suite}-`))
 
-    if (suite === 'single-folder') {
-      // Test a workspace with a single folder.
+    if (suite === 'single-folder' || suite === 'empty-folder') {
+      // Test a workspace with a single (empty or not) folder.
       launchArgs.unshift(testDirectory)
     } else if (suite === 'multi-root') {
       // Test a workspace with multiple folders.

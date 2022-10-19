@@ -1,8 +1,10 @@
-import { commands, window, workspace, type ExtensionContext } from 'vscode'
+import path from 'node:path'
 
-import { createNewFileOrFolder, getWorkspacesBaseDirectories } from './libs/fs'
+import { commands, window, workspace, type WorkspaceFolder, type ExtensionContext, QuickPickItemKind } from 'vscode'
+
+import { createNewFileOrFolder, getWorkspaceRecursiveFolders } from './libs/fs'
 import { openFile } from './libs/vsc'
-import { PathPicker } from './PathPicker'
+import { PathPicker, type PathPickerMenuItem } from './PathPicker'
 
 export function activate(context: ExtensionContext): void {
   let picker: PathPicker | undefined
@@ -17,7 +19,7 @@ export function activate(context: ExtensionContext): void {
         return
       }
 
-      picker = new PathPicker(getWorkspacesBaseDirectories(workspaceFolders))
+      picker = new PathPicker(getPathPickerMenuItems(workspaceFolders))
       picker.onPick = onPick
       picker.onDispose = () => (picker = undefined)
     }),
@@ -27,10 +29,56 @@ export function activate(context: ExtensionContext): void {
   )
 }
 
-async function onPick(pickedPath: string) {
+async function getPathPickerMenuItems(workspaceFolders: readonly WorkspaceFolder[]): Promise<PathPickerMenuItem[]> {
+  const isMultiRootWorkspace = workspaceFolders.length > 1
+  let didPushMenuItems = false
+
+  const menuItems = getPathPickerMenuItemShortcuts(workspaceFolders)
+
+  for (const workspaceFolder of workspaceFolders) {
+    const folders = await getWorkspaceRecursiveFolders(workspaceFolder)
+
+    if (folders.length > 0) {
+      didPushMenuItems = true
+    }
+
+    menuItems.push(
+      ...folders.map((folder) => ({
+        label: isMultiRootWorkspace
+          ? path.join(path.posix.sep, workspaceFolder.name, path.posix.sep, folder)
+          : path.join(path.posix.sep, folder),
+        path: path.join(workspaceFolder.uri.fsPath, folder),
+      }))
+    )
+  }
+
+  if (!didPushMenuItems) {
+    menuItems.pop()
+  }
+
+  return menuItems
+}
+
+function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFolder[]): PathPickerMenuItem[] {
+  const isMultiRootWorkspace = workspaceFolders.length > 1
+
+  return [
+    ...workspaceFolders.map((workspaceFolder) => ({
+      description: 'workspace root',
+      label: isMultiRootWorkspace ? path.join(path.posix.sep, workspaceFolder.name) : path.posix.sep,
+      path: workspaceFolder.uri.fsPath,
+    })),
+    {
+      kind: QuickPickItemKind.Separator,
+      label: '',
+    },
+  ]
+}
+
+async function onPick(newPath: string) {
   try {
-    await createNewFileOrFolder(pickedPath)
-    await openFile(pickedPath)
+    await createNewFileOrFolder(newPath)
+    await openFile(newPath)
   } catch (error) {
     console.error(error)
 

@@ -2,43 +2,19 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 import glob from 'fast-glob'
-import { QuickPickItemKind, workspace, type WorkspaceFolder } from 'vscode'
+import { workspace, type WorkspaceFolder } from 'vscode'
 
-export async function getWorkspacesBaseDirectories(workspaceFolders: readonly WorkspaceFolder[]) {
-  const isMultiRootWorkspace = workspaceFolders.length > 1
+export async function getWorkspaceRecursiveFolders(workspaceFolder: WorkspaceFolder) {
+  const excludeGlobs = await getExcludeGlobs(workspaceFolder)
 
-  const baseDirectories: BaseDirectory[] = []
+  const folders = await glob('**', {
+    cwd: workspaceFolder.uri.fsPath,
+    dot: true,
+    ignore: excludeGlobs,
+    onlyDirectories: true,
+  })
 
-  for (const workspaceFolder of workspaceFolders) {
-    const excludeGlobs = await getExcludeGlobs(workspaceFolder)
-
-    const workspaceDirectories = await glob('**', {
-      cwd: workspaceFolder.uri.fsPath,
-      dot: true,
-      ignore: excludeGlobs,
-      onlyDirectories: true,
-    })
-
-    baseDirectories.push(
-      {
-        description: 'workspace root',
-        label: isMultiRootWorkspace ? path.join(path.posix.sep, workspaceFolder.name) : path.posix.sep,
-        path: workspaceFolder.uri.fsPath,
-      },
-      {
-        kind: QuickPickItemKind.Separator,
-        label: '',
-      },
-      ...workspaceDirectories.sort().map((directory) => ({
-        label: isMultiRootWorkspace
-          ? path.join(path.posix.sep, workspaceFolder.name, path.posix.sep, directory)
-          : path.join(path.posix.sep, directory),
-        path: path.join(workspaceFolder.uri.fsPath, directory),
-      }))
-    )
-  }
-
-  return baseDirectories
+  return folders.sort()
 }
 
 export async function createNewFileOrFolder(fileOrFolderPath: string) {
@@ -61,12 +37,6 @@ export async function createNewFileOrFolder(fileOrFolderPath: string) {
 
 export function isFolderPath(fileOrFolderPath: string) {
   return fileOrFolderPath.endsWith(path.posix.sep)
-}
-
-export function isQualifiedBaseDirectory(
-  baseDirectory: BaseDirectory | undefined
-): baseDirectory is QualifiedBaseDirectory {
-  return typeof baseDirectory !== 'undefined' && typeof (baseDirectory as QualifiedBaseDirectory).path !== 'undefined'
 }
 
 async function getExcludeGlobs(workspaceFolder: WorkspaceFolder) {
@@ -118,17 +88,4 @@ async function fileOrFolderExists(fileOrFolderPath: string) {
   } catch {
     return false
   }
-}
-
-export type BaseDirectory = QualifiedBaseDirectory | BaseDirectorySeparator
-
-interface QualifiedBaseDirectory {
-  description?: string
-  label: string
-  path: string
-}
-
-interface BaseDirectorySeparator {
-  label: string
-  kind: QuickPickItemKind
 }
