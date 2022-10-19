@@ -9,5 +9,5 @@ export async function openFile(fileOrFolderPath: string) {
 
   const textDocument = await workspace.openTextDocument(fileOrFolderPath)
 
-  return window.showTextDocument(textDocument, ViewColumn.Active)
+  return window.showTextDocument(textDocument, { preview: false, viewColumn: ViewColumn.Active })
 }

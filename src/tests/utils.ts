@@ -87,7 +87,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     )
   }
 
-  async function pickWithMenuItem(menuItem: string, inputValue: string) {
+  function pickWithMenuItem(menuItem: string, inputValue: string) {
     if (picker) {
       const selectedMenuItem = picker.items.find((item) => item.label === menuItem)
 
@@ -98,8 +98,6 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
 
       picker.value = inputValue
       pickerAcceptEventEmitter?.fire()
-
-      await new Promise((resolve) => setTimeout(resolve, 100))
     }
   }
 
@@ -140,20 +138,17 @@ export async function emptyWorkspaceFolder(workspaceFolder: WorkspaceFolder) {
   }
 }
 
-export function getWorkspaceRelativePath(filePath: string, workspaceFolder = workspace.workspaceFolders?.[0]) {
-  invariant(workspaceFolder, 'The workspace folder does not exist.')
-
-  return path.join(workspaceFolder.uri.fsPath, filePath)
-}
-
-export function expectNewFileOrFolder(
+export async function expectNewFileOrFolder(
   relativeFileOrFolderPath: string,
   type: 'file' | 'folder',
   workspaceFolder = workspace.workspaceFolders?.[0]
 ) {
   const fileOrFolderPath = getWorkspaceRelativePath(relativeFileOrFolderPath, workspaceFolder)
 
-  invariant(fs.existsSync(fileOrFolderPath), `New file or folder at '${fileOrFolderPath}' not found.`)
+  while (!fs.existsSync(fileOrFolderPath)) {
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  }
+
   invariant(
     (type === 'file' && fs.statSync(fileOrFolderPath).isFile()) ||
       (type === 'folder' && fs.statSync(fileOrFolderPath).isDirectory()),
@@ -161,9 +156,27 @@ export function expectNewFileOrFolder(
   )
 }
 
+export async function expectOpenedFile(relativeFilePath: string, workspaceFolder = workspace.workspaceFolders?.[0]) {
+  const filePath = getWorkspaceRelativePath(relativeFilePath, workspaceFolder)
+
+  while (!workspace.textDocuments.some((document) => document.fileName === filePath)) {
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  }
+}
+
+export function waitForTimeout(timeout: number) {
+  return new Promise((resolve) => setTimeout(resolve, timeout))
+}
+
+function getWorkspaceRelativePath(filePath: string, workspaceFolder = workspace.workspaceFolders?.[0]) {
+  invariant(workspaceFolder, 'The workspace folder does not exist.')
+
+  return path.join(workspaceFolder.uri.fsPath, filePath)
+}
+
 interface WithExtensionHelpers {
   isPickerAvailable: () => boolean
   pickerMenuItemsEqual: (expectedMenuItems: (string | { label: string; description: string })[]) => boolean
-  pickWithMenuItem: (menuItem: string, inputValue: string) => Promise<void>
+  pickWithMenuItem: (menuItem: string, inputValue: string) => void
   triggerExtension: (waitForPathPicker?: boolean) => Promise<void>
 }

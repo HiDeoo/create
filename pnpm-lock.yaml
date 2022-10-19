@@ -4,6 +4,7 @@ specifiers:
   '@hideoo/eslint-config': 0.9.0
   '@hideoo/prettier-config': 0.1.1
   '@hideoo/tsconfig': 0.1.0
+  '@types/braces': 3.0.1
   '@types/chai': 4.3.3
   '@types/common-tags': 1.8.1
   '@types/mocha': 10.0.0
@@ -11,6 +12,7 @@ specifiers:
   '@types/sinon': 10.0.13
   '@types/vscode': 1.72.0
   '@vscode/test-electron': 2.1.5
+  braces: 3.0.2
   chai: 4.3.6
   common-tags: 1.8.2
   esbuild: 0.15.10
@@ -26,6 +28,7 @@ specifiers:
   typescript: 4.8.4
 
 dependencies:
+  braces: 3.0.2
   fast-glob: 3.2.12
   tiny-invariant: 1.3.1
 
@@ -33,6 +36,7 @@ devDependencies:
   '@hideoo/eslint-config': 0.9.0_z4bbprzjrhnsfa24uvmcbu7f5q
   '@hideoo/prettier-config': 0.1.1
   '@hideoo/tsconfig': 0.1.0
+  '@types/braces': 3.0.1
   '@types/chai': 4.3.3
   '@types/common-tags': 1.8.1
   '@types/mocha': 10.0.0
@@ -273,6 +277,10 @@ packages:
   /@tootallnate/once/1.1.2:
     resolution: {integrity: sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==}
     engines: {node: '>= 6'}
+    dev: true
+
+  /@types/braces/3.0.1:
+    resolution: {integrity: sha512-+euflG6ygo4bn0JHtn4pYqcXwRtLvElQ7/nnjDu7iYG56H0+OhCd7d6Ug0IE3WcFpZozBKW2+80FUbv5QGk5AQ==}
     dev: true
 
   /@types/chai/4.3.3:

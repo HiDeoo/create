@@ -1,5 +1,6 @@
 import path from 'node:path'
 
+import braces from 'braces'
 import { commands, window, workspace, type WorkspaceFolder, type ExtensionContext, QuickPickItemKind } from 'vscode'
 
 import { createNewFileOrFolder, getWorkspaceRecursiveFolders } from './libs/fs'
@@ -77,8 +78,12 @@ function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFold
 
 async function onPick(newPath: string) {
   try {
-    await createNewFileOrFolder(newPath)
-    await openFile(newPath)
+    const expandedPaths = braces(newPath, { expand: true })
+
+    for (const expandedPath of expandedPaths) {
+      await createNewFileOrFolder(expandedPath)
+      await openFile(expandedPath)
+    }
   } catch (error) {
     console.error(error)
 

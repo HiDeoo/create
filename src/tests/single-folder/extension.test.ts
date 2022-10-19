@@ -6,7 +6,7 @@ import { expect } from 'chai'
 import { stripIndents } from 'common-tags'
 import { window, workspace } from 'vscode'
 
-import { emptyWorkspaceFolder, expectNewFileOrFolder, getWorkspaceRelativePath, withExtension } from '../utils'
+import { emptyWorkspaceFolder, expectNewFileOrFolder, expectOpenedFile, waitForTimeout, withExtension } from '../utils'
 
 const workspaceFolder = workspace.workspaceFolders?.[0]
 assert(workspaceFolder, 'The workspace folder is not defined.')
@@ -94,9 +94,9 @@ describe('with a single-folder workspace', () => {
         const menuItem = '/'
         const inputValue = 'new-file'
 
-        await pickWithMenuItem(menuItem, inputValue)
+        pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
+        await expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
       }))
 
     it('should create a file', () =>
@@ -106,9 +106,9 @@ describe('with a single-folder workspace', () => {
         const menuItem = '/folder-1'
         const inputValue = 'new-file'
 
-        await pickWithMenuItem(menuItem, inputValue)
+        pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
+        await expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
       }))
 
     it('should create a file and missing parent folders', () =>
@@ -118,9 +118,9 @@ describe('with a single-folder workspace', () => {
         const menuItem = '/folder-2/folder-2-2/folder-2-2-1'
         const inputValue = 'folder-2-2-1-1/folder-2-2-1-1-1/new-file'
 
-        await pickWithMenuItem(menuItem, inputValue)
+        pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
+        await expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
       }))
 
     it('should open a new file', () =>
@@ -130,11 +130,9 @@ describe('with a single-folder workspace', () => {
         const menuItem = '/folder-1'
         const inputValue = 'new-file'
 
-        await pickWithMenuItem(menuItem, inputValue)
+        pickWithMenuItem(menuItem, inputValue)
 
-        expect(window.activeTextEditor?.document.uri.fsPath).to.equal(
-          getWorkspaceRelativePath(path.join(menuItem, inputValue))
-        )
+        await expectOpenedFile(path.join(menuItem, inputValue))
       }))
 
     it('should create a folder', () =>
@@ -144,9 +142,9 @@ describe('with a single-folder workspace', () => {
         const menuItem = '/folder-1'
         const inputValue = 'folder-1-1/'
 
-        await pickWithMenuItem(menuItem, inputValue)
+        pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(menuItem, inputValue), 'folder')
+        await expectNewFileOrFolder(path.join(menuItem, inputValue), 'folder')
       }))
 
     it('should create a folder and missing parent folders', () =>
@@ -156,9 +154,9 @@ describe('with a single-folder workspace', () => {
         const menuItem = '/folder-2/folder-2-2/folder-2-2-1'
         const inputValue = 'folder-2-2-1-1/folder-2-2-1-1-1/'
 
-        await pickWithMenuItem(menuItem, inputValue)
+        pickWithMenuItem(menuItem, inputValue)
 
-        expectNewFileOrFolder(path.join(menuItem, inputValue), 'folder')
+        await expectNewFileOrFolder(path.join(menuItem, inputValue), 'folder')
       }))
 
     it('should not open a new folder', () =>
@@ -168,9 +166,91 @@ describe('with a single-folder workspace', () => {
         const menuItem = '/folder-1'
         const inputValue = 'folder-1-1/'
 
-        await pickWithMenuItem(menuItem, inputValue)
+        pickWithMenuItem(menuItem, inputValue)
+
+        await waitForTimeout(100)
 
         expect(window.activeTextEditor?.document.uri.fsPath).to.be.undefined
       }))
+
+    describe('expansions', () => {
+      it('should create a file with with no expansion but similar syntax', () =>
+        withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
+          await triggerExtension()
+
+          const menuItem = '/folder-1'
+          const inputValue = 'new-file-{1.ext'
+
+          pickWithMenuItem(menuItem, inputValue)
+
+          await expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
+        }))
+
+      it('should create multiple files with a list expansion', () =>
+        withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
+          await triggerExtension()
+
+          const menuItem = '/folder-1'
+
+          pickWithMenuItem(menuItem, 'new-file-{1,2,3}.ext')
+
+          await expectNewFileOrFolder(path.join(menuItem, 'new-file-1.ext'), 'file')
+          await expectNewFileOrFolder(path.join(menuItem, 'new-file-2.ext'), 'file')
+          await expectNewFileOrFolder(path.join(menuItem, 'new-file-3.ext'), 'file')
+        }))
+
+      it('should create multiple files with a sequence expansion', () =>
+        withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
+          await triggerExtension()
+
+          const menuItem = '/folder-1'
+
+          pickWithMenuItem(menuItem, 'folder-1-1/new-file-{1..3}.ext')
+
+          await expectNewFileOrFolder(path.join(menuItem, 'folder-1-1/new-file-1.ext'), 'file')
+          await expectNewFileOrFolder(path.join(menuItem, 'folder-1-1/new-file-2.ext'), 'file')
+          await expectNewFileOrFolder(path.join(menuItem, 'folder-1-1/new-file-3.ext'), 'file')
+        }))
+
+      it('should create multiple files with an expansion even if some already exists', () =>
+        withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
+          await triggerExtension()
+
+          const menuItem = '/folder-3'
+
+          pickWithMenuItem(menuItem, '.file-3-{1..3}')
+
+          await expectNewFileOrFolder(path.join(menuItem, '.file-3-1'), 'file')
+          await expectNewFileOrFolder(path.join(menuItem, '.file-3-2'), 'file')
+          await expectNewFileOrFolder(path.join(menuItem, '.file-3-3'), 'file')
+        }))
+
+      it('should open multiple files with expansions', () =>
+        withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
+          await triggerExtension()
+
+          const menuItem = '/folder-1'
+
+          pickWithMenuItem(menuItem, 'new-file-{1..2}.{ext1,ext2}')
+
+          await expectOpenedFile(path.join(menuItem, 'new-file-1.ext1'))
+          await expectOpenedFile(path.join(menuItem, 'new-file-1.ext2'))
+          await expectOpenedFile(path.join(menuItem, 'new-file-2.ext1'))
+          await expectOpenedFile(path.join(menuItem, 'new-file-2.ext2'))
+        }))
+
+      it('should create multiple folders with an expansion', () =>
+        withExtension(async ({ pickWithMenuItem, triggerExtension }) => {
+          await triggerExtension()
+
+          const menuItem = '/folder-1'
+
+          pickWithMenuItem(menuItem, 'folder-1-1/new-folder-{1..3}/')
+
+          await expectNewFileOrFolder(path.join(menuItem, 'folder-1-1/new-folder-1'), 'folder')
+          await expectNewFileOrFolder(path.join(menuItem, 'folder-1-1/new-folder-2'), 'folder')
+          await expectNewFileOrFolder(path.join(menuItem, 'folder-1-1/new-folder-3'), 'folder')
+        }))
+    })
   })
 })
