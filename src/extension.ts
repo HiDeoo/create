@@ -4,7 +4,7 @@ import braces from 'braces'
 import { commands, window, workspace, type WorkspaceFolder, type ExtensionContext, QuickPickItemKind } from 'vscode'
 
 import { createNewFileOrFolder, getWorkspaceRecursiveFolders } from './libs/fs'
-import { openFile } from './libs/vsc'
+import { getDocumentWorkspaceFolder, openFile } from './libs/vsc'
 import { PathPicker, type PathPickerMenuItem } from './PathPicker'
 
 export function activate(context: ExtensionContext): void {
@@ -63,17 +63,33 @@ async function getPathPickerMenuItems(workspaceFolders: readonly WorkspaceFolder
 function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFolder[]): PathPickerMenuItem[] {
   const isMultiRootWorkspace = workspaceFolders.length > 1
 
-  return [
-    ...workspaceFolders.map((workspaceFolder) => ({
-      description: 'workspace root',
-      label: isMultiRootWorkspace ? path.join(path.posix.sep, workspaceFolder.name) : path.posix.sep,
-      path: workspaceFolder.uri.fsPath,
-    })),
-    {
-      kind: QuickPickItemKind.Separator,
-      label: '',
-    },
-  ]
+  const shortcuts: PathPickerMenuItem[] = workspaceFolders.map((workspaceFolder) => ({
+    description: 'workspace root',
+    label: isMultiRootWorkspace ? path.join(path.posix.sep, workspaceFolder.name) : path.posix.sep,
+    path: workspaceFolder.uri.fsPath,
+  }))
+
+  if (window.activeTextEditor) {
+    const activeWorkspaceFolder = getDocumentWorkspaceFolder(window.activeTextEditor.document)
+    const activeTextEditorPath = path.dirname(window.activeTextEditor.document.uri.fsPath)
+
+    if (activeWorkspaceFolder && activeWorkspaceFolder !== activeTextEditorPath) {
+      shortcuts.push({
+        description: 'active folder',
+        label: isMultiRootWorkspace
+          ? path.join(path.posix.sep, path.relative(path.dirname(activeWorkspaceFolder), activeTextEditorPath))
+          : path.join(path.posix.sep, path.relative(activeWorkspaceFolder, activeTextEditorPath)),
+        path: activeTextEditorPath,
+      })
+    }
+  }
+
+  shortcuts.push({
+    kind: QuickPickItemKind.Separator,
+    label: '',
+  })
+
+  return shortcuts
 }
 
 async function onPick(newPath: string) {

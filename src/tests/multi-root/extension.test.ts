@@ -5,6 +5,7 @@ import path from 'node:path'
 import { expect } from 'chai'
 import { window, workspace } from 'vscode'
 
+import { openFile } from '../../libs/vsc'
 import { emptyWorkspaceFolder, expectNewFileOrFolder, expectOpenedFile, waitForTimeout, withExtension } from '../utils'
 
 const workspaceFolderA = workspace.workspaceFolders?.[0]
@@ -30,6 +31,49 @@ describe('with a multi-root workspace', () => {
     describe('with no .gitignore', () => {
       it('should list ordered folders with the workspace prefix', () =>
         withExtension(async ({ pickerMenuItemsEqual, triggerExtension }) => {
+          await triggerExtension()
+
+          expect(
+            pickerMenuItemsEqual([
+              { label: '/folder-1', description: 'workspace root' },
+              { label: '/folder-2', description: 'workspace root' },
+              '---',
+              '/folder-1/random',
+              '/folder-2/folder-2-1',
+              '/folder-2/folder-2-2',
+              '/folder-2/folder-2-2/folder-2-2-1',
+              '/folder-2/folder-2-2/folder-2-2-2',
+              '/folder-2/folder-2-2/random',
+            ])
+          ).to.be.true
+        }))
+
+      it('should list ordered folders with the active folder shortcut in the proper workspace', () =>
+        withExtension(async ({ pickerMenuItemsEqual, triggerExtension }) => {
+          await openFile(path.join(workspaceFolderB.uri.fsPath, '/folder-2-2/file-2-2-1'))
+
+          await triggerExtension()
+
+          expect(
+            pickerMenuItemsEqual([
+              { label: '/folder-1', description: 'workspace root' },
+              { label: '/folder-2', description: 'workspace root' },
+              { label: '/folder-2/folder-2-2', description: 'active folder' },
+              '---',
+              '/folder-1/random',
+              '/folder-2/folder-2-1',
+              '/folder-2/folder-2-2',
+              '/folder-2/folder-2-2/folder-2-2-1',
+              '/folder-2/folder-2-2/folder-2-2-2',
+              '/folder-2/folder-2-2/random',
+            ])
+          ).to.be.true
+        }))
+
+      it('should list ordered folders without the active folder shortcut if the current document is at the root of the proper workspace', () =>
+        withExtension(async ({ pickerMenuItemsEqual, triggerExtension }) => {
+          await openFile(path.join(workspaceFolderA.uri.fsPath, 'file-1'))
+
           await triggerExtension()
 
           expect(
