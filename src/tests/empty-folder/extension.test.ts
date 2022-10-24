@@ -17,4 +17,15 @@ describe('with an empty folder workspace', () => {
         expect(pickerMenuItemsEqual([{ label: '/', description: 'workspace root' }])).to.be.true
       }))
   })
+
+  describe('path picker auto completion', () => {
+    it('should do nothing when triggered in an empty folder', () =>
+      withExtension(async ({ pickerInputValueEqual, triggerExtension, triggerAutoCompletion }) => {
+        await triggerExtension()
+
+        await triggerAutoCompletion('next')
+
+        expect(pickerInputValueEqual('/')).to.be.true
+      }))
+  })
 })
