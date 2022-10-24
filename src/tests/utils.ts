@@ -17,8 +17,6 @@ import {
   type WorkspaceFolder,
 } from 'vscode'
 
-import { type PathPickerAutoCompletionDirection } from '../PathPicker'
-
 export function runSuite(testsRoot: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const mocha = new Mocha({
@@ -150,8 +148,8 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     }
   }
 
-  async function triggerAutoCompletion(direction: PathPickerAutoCompletionDirection) {
-    await commands.executeCommand(direction === 'next' ? 'new.autoCompletionNext' : 'new.autoCompletionPrevious')
+  async function triggerAutoCompletion() {
+    await commands.executeCommand('new.autoComplete')
 
     await waitForTimeout(25)
 
@@ -248,6 +246,6 @@ interface WithExtensionHelpers {
   pickWithAutoCompletion: (inputValue: string) => Promise<void>
   pickWithMenuItem: (menuItem: string, inputValue: string) => void
   setInputValue: (inputValue: string) => Promise<void>
-  triggerAutoCompletion: (direction: PathPickerAutoCompletionDirection) => Promise<void>
+  triggerAutoCompletion: () => Promise<void>
   triggerExtension: (waitForPathPicker?: boolean) => Promise<void>
 }

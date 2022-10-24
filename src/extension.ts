@@ -30,8 +30,8 @@ export function activate(context: ExtensionContext): void {
       picker.onPickWithAutoCompletion = onPickWithAutoCompletion
       picker.onDispose = () => (picker = undefined)
     }),
-    commands.registerCommand('new.autoCompletionNext', () => {
-      picker?.autoComplete('next', getAutoCompletionResults)
+    commands.registerCommand('new.autoComplete', () => {
+      picker?.autoComplete(getAutoCompletionResults)
     })
   )
 }

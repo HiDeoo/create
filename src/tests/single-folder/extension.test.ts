@@ -328,7 +328,7 @@ describe('with a single-folder workspace', () => {
 
         await setInputValue(inputValue)
 
-        await triggerAutoCompletion('next')
+        await triggerAutoCompletion()
 
         expect(pickerInputValueEqual(inputValue)).to.be.true
       }))
@@ -337,7 +337,7 @@ describe('with a single-folder workspace', () => {
       withExtension(async ({ pickerMenuItemsEqual, triggerExtension, triggerAutoCompletion }) => {
         await triggerExtension()
 
-        await triggerAutoCompletion('next')
+        await triggerAutoCompletion()
 
         expect(pickerMenuItemsEqual([])).to.be.true
       }))
@@ -347,12 +347,10 @@ describe('with a single-folder workspace', () => {
         await triggerExtension()
 
         for (const inputValue of ['/.github', '/folder-1', '/folder-2', '/folder-3', '/.github']) {
-          await triggerAutoCompletion('next')
+          await triggerAutoCompletion()
 
           expect(pickerInputValueEqual(inputValue)).to.be.true
         }
-
-        // TODO(HiDeoo) previous
       }))
 
     it('should loop through root directories matching the input value', () =>
@@ -362,22 +360,18 @@ describe('with a single-folder workspace', () => {
         await setInputValue('f')
 
         for (const inputValue of ['/folder-1', '/folder-2', '/folder-3']) {
-          await triggerAutoCompletion('next')
+          await triggerAutoCompletion()
 
           expect(pickerInputValueEqual(inputValue)).to.be.true
         }
-
-        // TODO(HiDeoo) previous
 
         await setInputValue('/f')
 
         for (const inputValue of ['/folder-1', '/folder-2', '/folder-3']) {
-          await triggerAutoCompletion('next')
+          await triggerAutoCompletion()
 
           expect(pickerInputValueEqual(inputValue)).to.be.true
         }
-
-        // TODO(HiDeoo) previous
       }))
 
     it('should preserve the active menu item if any when triggered', () =>
@@ -407,7 +401,7 @@ describe('with a single-folder workspace', () => {
           await commands.executeCommand('workbench.action.quickOpenSelectNext')
           await commands.executeCommand('workbench.action.quickOpenSelectNext')
 
-          await triggerAutoCompletion('next')
+          await triggerAutoCompletion()
 
           expect(pickerInputValueEqual('/folder-1')).to.be.true
         }
@@ -419,7 +413,7 @@ describe('with a single-folder workspace', () => {
 
         await setInputValue('abc')
 
-        await triggerAutoCompletion('next')
+        await triggerAutoCompletion()
 
         expect(pickerInputValueEqual('/abc')).to.be.true
       }))
@@ -430,17 +424,17 @@ describe('with a single-folder workspace', () => {
 
         await setInputValue('f')
 
-        await triggerAutoCompletion('next')
+        await triggerAutoCompletion()
 
         expect(pickerInputValueEqual('/folder-1')).to.be.true
 
         await setInputValue('/folder-1/r')
 
-        await triggerAutoCompletion('next')
+        await triggerAutoCompletion()
 
         expect(pickerInputValueEqual('/folder-1/random/')).to.be.true
 
-        await triggerAutoCompletion('next')
+        await triggerAutoCompletion()
 
         expect(pickerInputValueEqual('/folder-1/random/random-nested/')).to.be.true
       }))
@@ -452,15 +446,15 @@ describe('with a single-folder workspace', () => {
 
           await setInputValue('f')
 
-          await triggerAutoCompletion('next')
-          await triggerAutoCompletion('next')
+          await triggerAutoCompletion()
+          await triggerAutoCompletion()
 
           expect(pickerInputValueEqual('/folder-2')).to.be.true
 
           await setInputValue('/folder-2/f')
 
-          await triggerAutoCompletion('next')
-          await triggerAutoCompletion('next')
+          await triggerAutoCompletion()
+          await triggerAutoCompletion()
 
           expect(pickerInputValueEqual('/folder-2/folder-2-2')).to.be.true
 
@@ -468,7 +462,7 @@ describe('with a single-folder workspace', () => {
 
           // .svn is excluded.
           for (const inputValue of ['/folder-2-2-1', '/folder-2-2-2', '/random', '/folder-2-2-1']) {
-            await triggerAutoCompletion('next')
+            await triggerAutoCompletion()
 
             expect(pickerInputValueEqual(`/folder-2/folder-2-2${inputValue}`)).to.be.true
           }
@@ -499,14 +493,14 @@ describe('with a single-folder workspace', () => {
 
           // folder-1 is gitignored.
           for (const inputValue of ['/folder-2', '/folder-3', '/folder-2']) {
-            await triggerAutoCompletion('next')
+            await triggerAutoCompletion()
 
             expect(pickerInputValueEqual(inputValue)).to.be.true
           }
 
           await setInputValue('/folder-2/f')
 
-          await triggerAutoCompletion('next')
+          await triggerAutoCompletion()
 
           // folder-2-2 is gitignored.
           expect(pickerInputValueEqual('/folder-2/folder-2-1/')).to.be.true
@@ -527,15 +521,15 @@ describe('with a single-folder workspace', () => {
 
             await setInputValue('f')
 
-            await triggerAutoCompletion('next')
-            await triggerAutoCompletion('next')
+            await triggerAutoCompletion()
+            await triggerAutoCompletion()
 
             expect(pickerInputValueEqual('/folder-2')).to.be.true
 
             await setInputValue('/folder-2/f')
 
-            await triggerAutoCompletion('next')
-            await triggerAutoCompletion('next')
+            await triggerAutoCompletion()
+            await triggerAutoCompletion()
 
             expect(pickerInputValueEqual('/folder-2/folder-2-2')).to.be.true
 
@@ -561,9 +555,9 @@ describe('with a single-folder workspace', () => {
 
             await setInputValue('f')
 
-            await triggerAutoCompletion('next')
-            await triggerAutoCompletion('next')
-            await triggerAutoCompletion('next')
+            await triggerAutoCompletion()
+            await triggerAutoCompletion()
+            await triggerAutoCompletion()
 
             expect(pickerInputValueEqual('/folder-3')).to.be.true
 
@@ -588,15 +582,15 @@ describe('with a single-folder workspace', () => {
 
             await setInputValue('f')
 
-            await triggerAutoCompletion('next')
-            await triggerAutoCompletion('next')
+            await triggerAutoCompletion()
+            await triggerAutoCompletion()
 
             expect(pickerInputValueEqual('/folder-2')).to.be.true
 
             await setInputValue('/folder-2/f')
 
-            await triggerAutoCompletion('next')
-            await triggerAutoCompletion('next')
+            await triggerAutoCompletion()
+            await triggerAutoCompletion()
 
             expect(pickerInputValueEqual('/folder-2/folder-2-2')).to.be.true
 

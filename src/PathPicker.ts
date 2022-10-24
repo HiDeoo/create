@@ -183,7 +183,7 @@ export class PathPicker {
     return triggerAutoCompletionAfterSetup
   }
 
-  async autoComplete(direction: PathPickerAutoCompletionDirection, getResults: (request: string) => Promise<string[]>) {
+  async autoComplete(getResults: (request: string) => Promise<string[]>) {
     if (!this.#didAutoComplete) {
       const triggerAutoCompletion = this.#setupAutoCompletion()
 
@@ -205,7 +205,7 @@ export class PathPicker {
     }
 
     if (this.#autoCompletionResults.length > 0) {
-      this.#autoCompletionIndex += direction === 'next' ? 1 : -1
+      this.#autoCompletionIndex += 1
 
       if (this.#autoCompletionIndex >= this.#autoCompletionResults.length) {
         this.#autoCompletionIndex = 0
@@ -228,8 +228,6 @@ export class PathPicker {
 }
 
 export type PathPickerMenuItem = PathPickerMenuFolderItem | PathPickerMenuSeparatorItem
-
-export type PathPickerAutoCompletionDirection = 'next' | 'previous'
 
 interface PathPickerMenuFolderItem {
   description?: string

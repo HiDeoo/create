@@ -68,7 +68,7 @@
     "keybindings": [
       {
         "key": "tab",
-        "command": "new.autoCompletionNext",
+        "command": "new.autoComplete",
         "when": "new.autoCompletionAvailable"
       }
     ]

@@ -23,7 +23,7 @@ describe('with an empty folder workspace', () => {
       withExtension(async ({ pickerInputValueEqual, triggerExtension, triggerAutoCompletion }) => {
         await triggerExtension()
 
-        await triggerAutoCompletion('next')
+        await triggerAutoCompletion()
 
         expect(pickerInputValueEqual('/')).to.be.true
       }))
