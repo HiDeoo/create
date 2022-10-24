@@ -1,15 +1,50 @@
 import path from 'node:path'
 
-import { type QuickPick, window, commands, QuickPickItemKind, type InputBox } from 'vscode'
+import { type QuickPick, window, commands, QuickPickItemKind } from 'vscode'
 
+/**
+ * ┌───────────┐
+ * │  #picker  │
+ * ├───────────┴───────────────────────────────────────────────────┐
+ * │ ┌───────────────────────────────────────────────────────────┐ │
+ * │ │ value                                                     │ │
+ * │ └───────────────────────────────────────────────────────────┘ │
+ * │ ┌───────┐                                                     │
+ * │ │ items │                                                     │
+ * │ ├───────┴───────────────────────────────────────────────────┐ │
+ * │ │ ┌───────────────────────────────────────────────────────┐ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ └───────────────────────────────────────────────────────┘ │ │
+ * │ │ ────────────────── MenuSeparatorItem  ─────────────────── │ │
+ * │ │ ┌───────────────────────────────────────────────────────┐ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ ├───────────────────────────────────────────────────────┤ │ │
+ * │ │ │ MenuFolderItem                                        │ │ │
+ * │ │ └───────────────────────────────────────────────────────┘ │ │
+ * │ └───────────────────────────────────────────────────────────┘ │
+ * └───────────────────────────────────────────────────────────────┘
+ */
 export class PathPicker {
   onDispose?: () => void
   onPick?: (newPath: string) => void
+  onPickWithAutoCompletion?: (newPathRequest: string) => void
 
-  #didAutoComplete = false
   #picker: QuickPick<PathPickerMenuItem>
-  #input?: InputBox
+  #ignoreValueChangeTimes = 0
+
   #selectedMenuFolderItem: PathPickerMenuFolderItem | undefined
+
+  #autoCompletionIndex = -1
+  #autoCompletionResults: string[] | undefined
+  #didAutoComplete = false
 
   static isPathPickerMenuFolderItem(item: PathPickerMenuItem): item is PathPickerMenuFolderItem {
     return (item as PathPickerMenuSeparatorItem).kind !== QuickPickItemKind.Separator
@@ -18,6 +53,7 @@ export class PathPicker {
   constructor(private readonly menuItems: Promise<PathPickerMenuItem[]>) {
     this.#picker = window.createQuickPick()
     this.#picker.onDidAccept(this.#pickerDidAccept)
+    this.#picker.onDidChangeValue(this.#pickerDidChangeValue)
     this.#picker.onDidHide(this.#dispose)
 
     // TODO(HiDeoo) placeholder
@@ -28,7 +64,6 @@ export class PathPicker {
     this.#setAutoCompletionAvailable(false)
 
     this.#picker.dispose()
-    this.#input?.dispose()
 
     this.onDispose?.()
   }
@@ -53,74 +88,148 @@ export class PathPicker {
     commands.executeCommand('setContext', 'new.autoCompletionAvailable', active)
   }
 
-  #switchToInputPicker(options?: { autoCompletion?: boolean; preserveValue?: boolean }) {
-    const pickerValue = this.#picker.value
-
-    this.#picker.dispose()
-
-    this.#input = window.createInputBox()
-    this.#input.onDidAccept(this.#inputDidAccept)
-    this.#input.onDidHide(this.#dispose)
-
-    if (options?.preserveValue) {
-      this.#input.value = pickerValue
+  #setInputValue(value: string, ignoreChange = false) {
+    if (ignoreChange) {
+      this.#ignoreValueChangeTimes++
     }
+
+    this.#picker.value = value
+  }
+
+  #switchToInputPicker(options?: { autoCompletion?: boolean; initialValue?: string | undefined }) {
+    this.#picker.busy = false
+    this.#picker.items = []
+    this.#setInputValue(options?.initialValue ?? '', true)
 
     if (options?.autoCompletion === false) {
       this.#setAutoCompletionAvailable(false)
     }
 
     // TODO(HiDeoo) placeholder
-    this.#input.show()
   }
 
   #pickerDidAccept = () => {
-    const menuSelectedItem = this.#picker.selectedItems[0]
+    if (!this.#didAutoComplete && !this.#selectedMenuFolderItem) {
+      const menuSelectedItem = this.#picker.selectedItems[0]
 
-    if (!menuSelectedItem || !PathPicker.isPathPickerMenuFolderItem(menuSelectedItem)) {
+      if (!menuSelectedItem || !PathPicker.isPathPickerMenuFolderItem(menuSelectedItem)) {
+        // TODO(HiDeoo) Show warning? Validation message?
+        return
+      }
+
+      this.#selectedMenuFolderItem = menuSelectedItem
+      this.#switchToInputPicker({ autoCompletion: false })
+
+      // TODO(HiDeoo) title / placeholder
+
+      return
+    }
+
+    if (this.#picker.value.length === 0) {
       // TODO(HiDeoo) Show warning? Validation message?
       return
     }
-
-    this.#selectedMenuFolderItem = menuSelectedItem
-    this.#switchToInputPicker({ autoCompletion: false })
-  }
-
-  #inputDidAccept = () => {
-    if (!this.#input || this.#input.value.length === 0) {
-      // TODO(HiDeoo) Show warning? Validation message?
-      return
-    }
-
-    this.#didPick()
-  }
-
-  #didPick() {
-    if (!this.#selectedMenuFolderItem || !this.#input) {
-      return
-    }
-
-    const newPath = path.join(this.#selectedMenuFolderItem.path, this.#input.value)
 
     // TODO(HiDeoo) Busy during onPick?
-    this.onPick?.(newPath)
+
+    if (!this.#didAutoComplete) {
+      this.onPick?.(path.join(this.#selectedMenuFolderItem?.path ?? path.posix.sep, this.#picker.value))
+    } else {
+      this.onPickWithAutoCompletion?.(path.join(path.posix.sep, this.#picker.value))
+    }
 
     this.#dispose()
   }
 
-  autoComplete() {
+  #pickerDidChangeValue = () => {
+    if (this.#ignoreValueChangeTimes > 0) {
+      this.#ignoreValueChangeTimes--
+
+      return
+    }
+
+    if (!this.#didAutoComplete) {
+      return
+    }
+
+    this.#autoCompletionIndex = -1
+    this.#autoCompletionResults = undefined
+  }
+
+  #setupAutoCompletion() {
     this.#didAutoComplete = true
     this.#selectedMenuFolderItem = undefined
 
-    this.#switchToInputPicker({ preserveValue: true })
+    let triggerAutoCompletionAfterSetup = true
 
-    // TODO(HiDeoo) Handle auto completion
-    // TODO(HiDeoo) Handle multiple auto completion
-    // TODO(HiDeoo) Busy state?
+    let initialValue = this.#picker.value
+
+    if (this.#picker.value.length === 0) {
+      const activeMenuFolderItem = this.#picker.activeItems.find(PathPicker.isPathPickerMenuFolderItem)
+
+      if (activeMenuFolderItem) {
+        initialValue = activeMenuFolderItem.label
+
+        triggerAutoCompletionAfterSetup = false
+      }
+    }
+
+    if (!initialValue.startsWith('/')) {
+      initialValue = `${path.posix.sep}${initialValue}`
+    }
+
+    this.#switchToInputPicker({ initialValue })
+
+    return triggerAutoCompletionAfterSetup
+  }
+
+  async autoComplete(direction: PathPickerAutoCompletionDirection, getResults: (request: string) => Promise<string[]>) {
+    if (!this.#didAutoComplete) {
+      const triggerAutoCompletion = this.#setupAutoCompletion()
+
+      if (!triggerAutoCompletion) {
+        return
+      }
+    }
+
+    if (!this.#autoCompletionResults) {
+      let request = this.#picker.value
+
+      if (request.length === 0 || !request.startsWith('/')) {
+        request = `${path.posix.sep}${request}`
+      }
+
+      this.#picker.busy = true
+      this.#autoCompletionResults = await getResults(request)
+      this.#picker.busy = false
+    }
+
+    if (this.#autoCompletionResults.length > 0) {
+      this.#autoCompletionIndex += direction === 'next' ? 1 : -1
+
+      if (this.#autoCompletionIndex >= this.#autoCompletionResults.length) {
+        this.#autoCompletionIndex = 0
+      } else if (this.#autoCompletionIndex < 0) {
+        this.#autoCompletionIndex = this.#autoCompletionResults.length - 1
+      }
+
+      let completion = this.#autoCompletionResults[this.#autoCompletionIndex]
+      const isSingleResult = this.#autoCompletionResults.length === 1
+
+      if (isSingleResult) {
+        completion = `${completion}${path.posix.sep}`
+      }
+
+      if (completion && this.#picker.value !== completion) {
+        this.#setInputValue(completion, !isSingleResult)
+      }
+    }
   }
 }
 
 export type PathPickerMenuItem = PathPickerMenuFolderItem | PathPickerMenuSeparatorItem
+
+export type PathPickerAutoCompletionDirection = 'next' | 'previous'
 
 interface PathPickerMenuFolderItem {
   description?: string

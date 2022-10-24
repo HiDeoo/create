@@ -3,8 +3,13 @@ import path from 'node:path'
 import braces from 'braces'
 import { commands, window, workspace, type WorkspaceFolder, type ExtensionContext, QuickPickItemKind } from 'vscode'
 
-import { createNewFileOrFolder, getWorkspaceRecursiveFolders } from './libs/fs'
-import { getDocumentWorkspaceFolder, openFile } from './libs/vsc'
+import { createNewFileOrFolder, getWorkspaceFoldersMatchingGlob, getWorkspaceRecursiveFolders } from './libs/fs'
+import {
+  getDocumentWorkspaceFolder,
+  getWorkspaceFolderBasename,
+  getWorkspaceFolderMatchingPathRequest,
+  openFile,
+} from './libs/vsc'
 import { PathPicker, type PathPickerMenuItem } from './PathPicker'
 
 export function activate(context: ExtensionContext): void {
@@ -22,10 +27,11 @@ export function activate(context: ExtensionContext): void {
 
       picker = new PathPicker(getPathPickerMenuItems(workspaceFolders))
       picker.onPick = onPick
+      picker.onPickWithAutoCompletion = onPickWithAutoCompletion
       picker.onDispose = () => (picker = undefined)
     }),
-    commands.registerCommand('new.tab', () => {
-      picker?.autoComplete()
+    commands.registerCommand('new.autoCompletionNext', () => {
+      picker?.autoComplete('next', getAutoCompletionResults)
     })
   )
 }
@@ -45,9 +51,7 @@ async function getPathPickerMenuItems(workspaceFolders: readonly WorkspaceFolder
 
     menuItems.push(
       ...folders.map((folder) => ({
-        label: isMultiRootWorkspace
-          ? path.join(path.posix.sep, workspaceFolder.name, path.posix.sep, folder)
-          : path.join(path.posix.sep, folder),
+        label: formatFolderLabel(folder, workspaceFolder, isMultiRootWorkspace),
         path: path.join(workspaceFolder.uri.fsPath, folder),
       }))
     )
@@ -65,7 +69,9 @@ function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFold
 
   const shortcuts: PathPickerMenuItem[] = workspaceFolders.map((workspaceFolder) => ({
     description: 'workspace root',
-    label: isMultiRootWorkspace ? path.join(path.posix.sep, workspaceFolder.name) : path.posix.sep,
+    label: isMultiRootWorkspace
+      ? path.join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder))
+      : path.posix.sep,
     path: workspaceFolder.uri.fsPath,
   }))
 
@@ -105,4 +111,64 @@ async function onPick(newPath: string) {
 
     // TODO(HiDeoo)
   }
+}
+
+function onPickWithAutoCompletion(newPathRequest: string) {
+  const workspaceFolder = getWorkspaceFolderMatchingPathRequest(newPathRequest)
+
+  if (!workspaceFolder) {
+    window.showErrorMessage(`No workspace folder found to create '${newPathRequest}'.`)
+
+    return
+  }
+
+  const isMultiRootWorkspace = (workspace.workspaceFolders ?? []).length > 1
+
+  onPick(
+    isMultiRootWorkspace
+      ? path.join(path.dirname(workspaceFolder.uri.fsPath), newPathRequest)
+      : path.join(workspaceFolder.uri.fsPath, newPathRequest)
+  )
+}
+
+async function getAutoCompletionResults(request: string) {
+  const results: string[] = []
+
+  const workspaceFolders = workspace.workspaceFolders ?? []
+  const isMultiRootWorkspace = workspaceFolders.length > 1
+  const isRootWorkspaceRequest =
+    isMultiRootWorkspace &&
+    path.dirname(request) === path.posix.sep &&
+    (request.length === 1 || request.at(-1) !== path.posix.sep)
+
+  if (isRootWorkspaceRequest) {
+    for (const workspaceFolder of workspaceFolders) {
+      if (path.join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder)).startsWith(request)) {
+        results.push(path.join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder)))
+      }
+    }
+
+    return results
+  }
+
+  for (const workspaceFolder of workspaceFolders) {
+    const autoCompletionGlob = `${request.slice(1)}*`
+
+    const folders = await getWorkspaceFoldersMatchingGlob(
+      workspaceFolder,
+      isMultiRootWorkspace
+        ? autoCompletionGlob.slice(autoCompletionGlob.indexOf(path.posix.sep) + 1)
+        : autoCompletionGlob
+    )
+
+    results.push(...folders.map((folder) => formatFolderLabel(folder, workspaceFolder, isMultiRootWorkspace)))
+  }
+
+  return results
+}
+
+function formatFolderLabel(folder: string, workspaceFolder: WorkspaceFolder, inMultiRootWorkspace: boolean) {
+  return inMultiRootWorkspace
+    ? path.join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder), path.posix.sep, folder)
+    : path.join(path.posix.sep, folder)
 }

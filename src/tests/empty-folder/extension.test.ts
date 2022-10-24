@@ -9,7 +9,7 @@ const workspaceFolder = workspace.workspaceFolders?.[0]
 assert(workspaceFolder, 'The workspace folder is not defined.')
 
 describe('with an empty folder workspace', () => {
-  describe('path picker menu items', () => {
+  describe('path picker fuzzy matching', () => {
     it('should list only the root folder with no separator', () =>
       withExtension(async ({ pickerMenuItemsEqual, triggerExtension }) => {
         await triggerExtension()

@@ -17,6 +17,19 @@ export async function getWorkspaceRecursiveFolders(workspaceFolder: WorkspaceFol
   return folders.sort()
 }
 
+export async function getWorkspaceFoldersMatchingGlob(workspaceFolder: WorkspaceFolder, pattern: string) {
+  const excludeGlobs = await getExcludeGlobs(workspaceFolder)
+
+  const folders = await glob(pattern, {
+    cwd: workspaceFolder.uri.fsPath,
+    dot: true,
+    ignore: excludeGlobs,
+    onlyDirectories: true,
+  })
+
+  return folders.sort()
+}
+
 export async function createNewFileOrFolder(fileOrFolderPath: string) {
   const exists = await fileOrFolderExists(fileOrFolderPath)
 

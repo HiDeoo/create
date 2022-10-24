@@ -7,8 +7,8 @@ import { stub } from 'sinon'
 import invariant from 'tiny-invariant'
 import {
   commands,
+  type Disposable,
   EventEmitter,
-  type InputBox,
   type QuickPick,
   type QuickPickItem,
   QuickPickItemKind,
@@ -16,6 +16,8 @@ import {
   workspace,
   type WorkspaceFolder,
 } from 'vscode'
+
+import { type PathPickerAutoCompletionDirection } from '../PathPicker'
 
 export function runSuite(testsRoot: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -49,9 +51,8 @@ export function runSuite(testsRoot: string): Promise<void> {
 
 export async function withExtension(run: (withExtensionHelpers: WithExtensionHelpers) => Promise<void>) {
   let picker: QuickPick<QuickPickItem> | undefined
-  let input: InputBox | undefined
   let pickerAcceptEventEmitter: EventEmitter<void> | undefined
-  let inputAcceptEventEmitter: EventEmitter<void> | undefined
+  let pickerChangeValueEventEmitter: EventEmitter<string> | undefined
 
   const createQuickPickStub = stub(window, 'createQuickPick').callsFake(() => {
     picker = createQuickPickStub.wrappedMethod()
@@ -59,20 +60,36 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     pickerAcceptEventEmitter = new EventEmitter<void>()
     stub(picker, 'onDidAccept').callsFake(pickerAcceptEventEmitter.event)
 
+    pickerChangeValueEventEmitter = new EventEmitter<string>()
+    const onDidChangeValueStub = stub(picker, 'onDidChangeValue').callsFake(
+      (listener: (e: string) => unknown, thisArgs?: unknown, disposables?: Disposable[] | undefined) => {
+        pickerChangeValueEventEmitter?.event(listener, thisArgs, disposables)
+
+        return onDidChangeValueStub.wrappedMethod(
+          (...args) => {
+            listener(...args)
+          },
+          thisArgs,
+          disposables
+        )
+      }
+    )
+
     return picker
-  })
-
-  const createInputBoxStub = stub(window, 'createInputBox').callsFake(() => {
-    input = createInputBoxStub.wrappedMethod()
-
-    inputAcceptEventEmitter = new EventEmitter<void>()
-    stub(input, 'onDidAccept').callsFake(inputAcceptEventEmitter.event)
-
-    return input
   })
 
   function isPickerAvailable() {
     return typeof picker !== 'undefined'
+  }
+
+  function pickerInputValueEqual(expectedValue: string) {
+    const isEqual = picker?.value === expectedValue
+
+    if (!isEqual) {
+      console.error(`Path picker input value '${picker?.value}' does not equal '${expectedValue}'.`)
+    }
+
+    return isEqual
   }
 
   // --- represents a PathPickerMenuSeparatorItem
@@ -99,6 +116,14 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     )
   }
 
+  async function pickWithAutoCompletion(inputValue: string) {
+    if (picker) {
+      await setInputValue(inputValue)
+
+      pickerAcceptEventEmitter?.fire()
+    }
+  }
+
   async function pickWithMenuItem(menuItem: string, inputValue: string) {
     if (picker) {
       const selectedMenuItem = picker.items.find((item) => item.label === menuItem)
@@ -108,10 +133,30 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
       picker.selectedItems = [selectedMenuItem]
       pickerAcceptEventEmitter?.fire()
 
-      if (input) {
-        input.value = inputValue
-        inputAcceptEventEmitter?.fire()
+      picker.value = inputValue
+      pickerAcceptEventEmitter?.fire()
+    }
+  }
+
+  async function setInputValue(inputValue: string) {
+    if (picker) {
+      picker.value = inputValue
+
+      await waitForTimeout(25)
+
+      if (pickerChangeValueEventEmitter) {
+        pickerChangeValueEventEmitter?.fire(inputValue)
       }
+    }
+  }
+
+  async function triggerAutoCompletion(direction: PathPickerAutoCompletionDirection) {
+    await commands.executeCommand(direction === 'next' ? 'new.autoCompletionNext' : 'new.autoCompletionPrevious')
+
+    await waitForTimeout(25)
+
+    while (picker?.busy) {
+      await new Promise((resolve) => setTimeout(resolve, 50))
     }
   }
 
@@ -129,15 +174,22 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
 
   await run({
     isPickerAvailable,
+    pickerInputValueEqual,
     pickerMenuItemsEqual,
+    pickWithAutoCompletion,
     pickWithMenuItem,
+    setInputValue,
+    triggerAutoCompletion,
     triggerExtension,
   })
 
   await commands.executeCommand('workbench.action.closeAllEditors')
 
+  if (picker) {
+    picker.dispose()
+  }
+
   createQuickPickStub.restore()
-  createInputBoxStub.restore()
 }
 
 export async function emptyWorkspaceFolder(workspaceFolder: WorkspaceFolder) {
@@ -191,7 +243,11 @@ function getWorkspaceRelativePath(filePath: string, workspaceFolder = workspace.
 
 interface WithExtensionHelpers {
   isPickerAvailable: () => boolean
+  pickerInputValueEqual: (expectedInputValue: string) => boolean
   pickerMenuItemsEqual: (expectedMenuItems: (string | { label: string; description: string })[]) => boolean
+  pickWithAutoCompletion: (inputValue: string) => Promise<void>
   pickWithMenuItem: (menuItem: string, inputValue: string) => void
+  setInputValue: (inputValue: string) => Promise<void>
+  triggerAutoCompletion: (direction: PathPickerAutoCompletionDirection) => Promise<void>
   triggerExtension: (waitForPathPicker?: boolean) => Promise<void>
 }
