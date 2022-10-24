@@ -109,7 +109,7 @@ async function onPick(newPath: string) {
   } catch (error) {
     console.error(error)
 
-    // TODO(HiDeoo)
+    window.showErrorMessage('Unable to create and open new file.')
   }
 }
 

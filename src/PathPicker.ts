@@ -56,7 +56,6 @@ export class PathPicker {
     this.#picker.onDidChangeValue(this.#pickerDidChangeValue)
     this.#picker.onDidHide(this.#dispose)
 
-    // TODO(HiDeoo) placeholder
     this.#show()
   }
 
@@ -72,6 +71,7 @@ export class PathPicker {
     this.#setAutoCompletionAvailable(true)
 
     this.#picker.busy = true
+    this.#picker.placeholder = 'Select the existing folder that will contain the new file(s) & folder(s)'
     this.#picker.show()
 
     if (this.#didAutoComplete) {
@@ -99,13 +99,13 @@ export class PathPicker {
   #switchToInputPicker(options?: { autoCompletion?: boolean; initialValue?: string | undefined }) {
     this.#picker.busy = false
     this.#picker.items = []
+    this.#picker.placeholder = 'New file(s) & folder(s) path'
     this.#setInputValue(options?.initialValue ?? '', true)
 
     if (options?.autoCompletion === false) {
+      this.#picker.placeholder = 'New file(s) & folder(s) relative path'
       this.#setAutoCompletionAvailable(false)
     }
-
-    // TODO(HiDeoo) placeholder
   }
 
   #pickerDidAccept = () => {
@@ -120,8 +120,6 @@ export class PathPicker {
       this.#selectedMenuFolderItem = menuSelectedItem
       this.#switchToInputPicker({ autoCompletion: false })
 
-      // TODO(HiDeoo) title / placeholder
-
       return
     }
 
@@ -129,8 +127,6 @@ export class PathPicker {
       // TODO(HiDeoo) Show warning? Validation message?
       return
     }
-
-    // TODO(HiDeoo) Busy during onPick?
 
     if (!this.#didAutoComplete) {
       this.onPick?.(path.join(this.#selectedMenuFolderItem?.path ?? path.posix.sep, this.#picker.value))
