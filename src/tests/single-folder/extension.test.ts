@@ -164,6 +164,22 @@ describe('with a single-folder workspace', () => {
             await expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
           }))
 
+        it('should create empty files', () =>
+          withExtension(async ({ pickWithMenuItem, triggerCreate }) => {
+            await triggerCreate()
+
+            const menuItem = '/folder-1'
+            const inputValue = 'new-file'
+
+            pickWithMenuItem(menuItem, inputValue)
+
+            await expectNewFileOrFolder(path.join(menuItem, inputValue), 'file')
+
+            const content = await fs.readFile(path.join(workspaceFolder.uri.fsPath, menuItem, inputValue), 'utf8')
+
+            expect(content).to.be.empty
+          }))
+
         it('should create a file and missing parent folders', () =>
           withExtension(async ({ pickWithMenuItem, triggerCreate }) => {
             await triggerCreate()
@@ -188,7 +204,7 @@ describe('with a single-folder workspace', () => {
             await expectOpenedFile(path.join(menuItem, inputValue))
           }))
 
-        it('should open an existing file', () =>
+        it('should open an existing file and not override its content', () =>
           withExtension(async ({ pickWithMenuItem, triggerCreate }) => {
             await triggerCreate()
 
@@ -198,6 +214,10 @@ describe('with a single-folder workspace', () => {
             pickWithMenuItem(menuItem, inputValue)
 
             await expectOpenedFile(path.join(menuItem, inputValue))
+
+            const content = await fs.readFile(path.join(workspaceFolder.uri.fsPath, menuItem, inputValue), 'utf8')
+
+            expect(content).to.be.equal('.file-3-1\n')
           }))
 
         it('should create a folder', () =>
