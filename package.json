@@ -10,6 +10,10 @@
     "lint": "prettier -c . && eslint . --cache --max-warnings=0 && tsc --noEmit",
     "test": "pnpm clean && tsc && node dist/tests/index.js",
     "clean": "rimraf dist",
+    "vscode:ls": "vsce ls --no-dependencies",
+    "vscode:package": "vsce package --no-dependencies",
+    "vscode:publish": "vsce publish --no-dependencies",
+    "vscode:prepublish": "pnpm build",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -26,7 +30,7 @@
     "@types/mocha": "10.0.0",
     "@types/node": "16.11.65",
     "@types/sinon": "10.0.13",
-    "@types/vscode": "1.72.0",
+    "@types/vscode": "1.70.0",
     "@vscode/test-electron": "2.1.5",
     "chai": "4.3.6",
     "common-tags": "1.8.2",

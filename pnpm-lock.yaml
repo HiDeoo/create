@@ -10,7 +10,7 @@ specifiers:
   '@types/mocha': 10.0.0
   '@types/node': 16.11.65
   '@types/sinon': 10.0.13
-  '@types/vscode': 1.72.0
+  '@types/vscode': 1.70.0
   '@vscode/test-electron': 2.1.5
   braces: 3.0.2
   chai: 4.3.6
@@ -41,7 +41,7 @@ devDependencies:
   '@types/mocha': 10.0.0
   '@types/node': 16.11.65
   '@types/sinon': 10.0.13
-  '@types/vscode': 1.72.0
+  '@types/vscode': 1.70.0
   '@vscode/test-electron': 2.1.5
   chai: 4.3.6
   common-tags: 1.8.2
@@ -321,8 +321,8 @@ packages:
     resolution: {integrity: sha512-9GcLXF0/v3t80caGs5p2rRfkB+a8VBGLJZVih6CNFkx8IZ994wiKKLSRs9nuFwk1HevWs/1mnUmkApGrSGsShA==}
     dev: true
 
-  /@types/vscode/1.72.0:
-    resolution: {integrity: sha512-WvHluhUo+lQvE3I4wUagRpnkHuysB4qSyOQUyIAS9n9PYMJjepzTUD8Jyks0YeXoPD0UGctjqp2u84/b3v6Ydw==}
+  /@types/vscode/1.70.0:
+    resolution: {integrity: sha512-3/9Fz0F2eBgwciazc94Ien+9u1elnjFg9YAhvAb3qDy/WeFWD9VrOPU7CIytryOVUdbxus8uzL4VZYONA0gDtA==}
     dev: true
 
   /@typescript-eslint/eslint-plugin/5.30.0_bz5y6turph6x54td2myoscnaoy:

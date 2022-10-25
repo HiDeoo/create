@@ -20,6 +20,7 @@ dist
 dist-ssr
 lerna-debug.log*
 logs
+new-**.vsix
 next-env.d.ts
 node_modules
 npm-debug.log*
