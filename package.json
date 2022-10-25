@@ -96,6 +96,7 @@
     }
   },
   "displayName": "New",
+  "icon": "assets/icon.png",
   "prettier": "@hideoo/prettier-config",
   "lint-staged": {
     "**/*": "prettier -w -u --cache",
