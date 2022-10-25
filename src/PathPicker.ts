@@ -46,11 +46,20 @@ export class PathPicker {
   #autoCompletionResults: string[] | undefined
   #didAutoComplete = false
 
-  static isPathPickerMenuFolderItem(item: PathPickerMenuItem): item is PathPickerMenuFolderItem {
+  static newWithSelectedMenuItem(menuItem: PathPickerMenuFolderItem) {
+    const picker = new PathPicker()
+
+    picker.#selectedMenuFolderItem = menuItem
+    picker.#switchToInputPicker({ autoCompletion: false })
+
+    return picker
+  }
+
+  static #isPathPickerMenuFolderItem(item: PathPickerMenuItem): item is PathPickerMenuFolderItem {
     return (item as PathPickerMenuSeparatorItem).kind !== QuickPickItemKind.Separator
   }
 
-  constructor(private readonly menuItems: Promise<PathPickerMenuItem[]>) {
+  constructor(private readonly menuItems?: Promise<PathPickerMenuItem[]>) {
     this.#picker = window.createQuickPick()
     this.#picker.onDidAccept(this.#pickerDidAccept)
     this.#picker.onDidChangeValue(this.#pickerDidChangeValue)
@@ -71,6 +80,7 @@ export class PathPicker {
     this.#setAutoCompletionAvailable(true)
 
     this.#picker.busy = true
+    this.#picker.title = 'New file(s) & folder(s)'
     this.#picker.placeholder = 'Select the existing folder that will contain the new file(s) & folder(s)'
     this.#picker.show()
 
@@ -81,7 +91,10 @@ export class PathPicker {
     const menuItems = await this.menuItems
 
     this.#picker.busy = false
-    this.#picker.items = menuItems
+
+    if (menuItems) {
+      this.#picker.items = menuItems
+    }
   }
 
   #setAutoCompletionAvailable(active: boolean) {
@@ -103,6 +116,7 @@ export class PathPicker {
     this.#setInputValue(options?.initialValue ?? '', true)
 
     if (options?.autoCompletion === false) {
+      this.#picker.title = `New file(s) & folder(s) relative to ${this.#selectedMenuFolderItem?.label}`
       this.#picker.placeholder = 'New file(s) & folder(s) relative path'
       this.#setAutoCompletionAvailable(false)
     }
@@ -112,7 +126,7 @@ export class PathPicker {
     if (!this.#didAutoComplete && !this.#selectedMenuFolderItem) {
       const menuSelectedItem = this.#picker.selectedItems[0]
 
-      if (!menuSelectedItem || !PathPicker.isPathPickerMenuFolderItem(menuSelectedItem)) {
+      if (!menuSelectedItem || !PathPicker.#isPathPickerMenuFolderItem(menuSelectedItem)) {
         return
       }
 
@@ -159,7 +173,7 @@ export class PathPicker {
     let initialValue = this.#picker.value
 
     if (this.#picker.value.length === 0) {
-      const activeMenuFolderItem = this.#picker.activeItems.find(PathPicker.isPathPickerMenuFolderItem)
+      const activeMenuFolderItem = this.#picker.activeItems.find(PathPicker.#isPathPickerMenuFolderItem)
 
       if (activeMenuFolderItem) {
         initialValue = activeMenuFolderItem.label

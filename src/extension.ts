@@ -8,6 +8,8 @@ import {
   getDocumentWorkspaceFolder,
   getWorkspaceFolderBasename,
   getWorkspaceFolderMatchingPathRequest,
+  isFileTextEditor,
+  isWorkspaceWithFolders,
   openFile,
 } from './libs/vsc'
 import { PathPicker, type PathPickerMenuItem } from './PathPicker'
@@ -16,18 +18,36 @@ export function activate(context: ExtensionContext): void {
   let picker: PathPicker | undefined
 
   context.subscriptions.push(
-    commands.registerCommand('new.pick', async () => {
-      const workspaceFolders = workspace.workspaceFolders
-
-      if (!workspaceFolders || workspaceFolders.length === 0) {
-        window.showErrorMessage('No workspace folder found, please open a folder first.')
-
+    commands.registerCommand('new.create', () => {
+      if (!isWorkspaceWithFolders(workspace.workspaceFolders)) {
         return
       }
 
-      picker = new PathPicker(getPathPickerMenuItems(workspaceFolders))
+      picker = new PathPicker(getPathPickerMenuItems(workspace.workspaceFolders))
       picker.onPick = onPick
       picker.onPickWithAutoCompletion = onPickWithAutoCompletion
+      picker.onDispose = () => (picker = undefined)
+    }),
+    commands.registerCommand('new.createFromCurrent', () => {
+      if (!isWorkspaceWithFolders(workspace.workspaceFolders) || !isFileTextEditor(window.activeTextEditor)) {
+        return
+      }
+
+      const isMultiRootWorkspace = workspace.workspaceFolders.length > 1
+
+      const menuItemPath = path.dirname(window.activeTextEditor.document.uri.fsPath)
+      const menuItemRelativePath = workspace.asRelativePath(menuItemPath)
+      const menuItemLabel = menuItemRelativePath.startsWith(path.posix.sep)
+        ? isMultiRootWorkspace
+          ? path.join(path.posix.sep, path.basename(menuItemRelativePath))
+          : path.posix.sep
+        : path.join(path.posix.sep, menuItemRelativePath)
+
+      picker = PathPicker.newWithSelectedMenuItem({
+        label: menuItemLabel,
+        path: menuItemPath,
+      })
+      picker.onPick = onPick
       picker.onDispose = () => (picker = undefined)
     }),
     commands.registerCommand('new.autoComplete', () => {

@@ -1,6 +1,6 @@
 import path from 'node:path'
 
-import { type TextDocument, ViewColumn, window, workspace, type WorkspaceFolder } from 'vscode'
+import { type TextDocument, ViewColumn, window, workspace, type WorkspaceFolder, type TextEditor } from 'vscode'
 
 import { isFolderPath } from './fs'
 
@@ -43,4 +43,26 @@ export function getWorkspaceFolderMatchingPathRequest(pathRequest: string) {
 
     return workspacePrefix === pathRequestPrefix
   })
+}
+
+export function isWorkspaceWithFolders(
+  workspaceFolders: readonly WorkspaceFolder[] | undefined
+): workspaceFolders is readonly [WorkspaceFolder, ...(readonly WorkspaceFolder[])] {
+  if (!workspaceFolders || workspaceFolders.length === 0) {
+    window.showErrorMessage('No workspace folder found, please open a folder first.')
+
+    return false
+  }
+
+  return true
+}
+
+export function isFileTextEditor(textEditor: TextEditor | undefined): textEditor is TextEditor {
+  if (!textEditor || textEditor.document.isUntitled || textEditor.document.uri.scheme !== 'file') {
+    window.showErrorMessage('No opened file found, please open a file first.')
+
+    return false
+  }
+
+  return true
 }

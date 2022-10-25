@@ -6,15 +6,24 @@ import { withExtension } from '../utils'
 
 describe('with no folder in the workspace', () => {
   it('should bail out and show an error', () =>
-    withExtension(async ({ isPickerAvailable, triggerExtension }) => {
+    withExtension(async ({ isPickerAvailable, triggerCreate, triggerCreateFromCurrent }) => {
+      const expectedErrorMessage = 'No workspace folder found, please open a folder first.'
+
       const showErrorMessageSpy = spy(window, 'showErrorMessage') as unknown as SinonSpy<
         [message: string],
         Thenable<MessageItem | undefined>
       >
 
-      await triggerExtension(false)
+      await triggerCreate(false)
 
-      expect(showErrorMessageSpy.calledOnceWith('No workspace folder found, please open a folder first.')).to.be.true
+      expect(showErrorMessageSpy.calledOnceWith(expectedErrorMessage)).to.be.true
+      expect(isPickerAvailable()).to.be.false
+
+      showErrorMessageSpy.resetHistory()
+
+      await triggerCreateFromCurrent(false)
+
+      expect(showErrorMessageSpy.calledOnceWith(expectedErrorMessage)).to.be.true
       expect(isPickerAvailable()).to.be.false
 
       showErrorMessageSpy.restore()

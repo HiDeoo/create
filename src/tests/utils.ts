@@ -136,6 +136,13 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     }
   }
 
+  async function pickWithInputValue(inputValue: string) {
+    if (picker) {
+      picker.value = inputValue
+      pickerAcceptEventEmitter?.fire()
+    }
+  }
+
   async function setInputValue(inputValue: string) {
     if (picker) {
       picker.value = inputValue
@@ -158,8 +165,16 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     }
   }
 
-  async function triggerExtension(waitForPathPicker = true) {
-    await commands.executeCommand('new.pick')
+  function triggerCreate(waitForPathPicker = true) {
+    return triggerExtension('new.create', waitForPathPicker)
+  }
+
+  function triggerCreateFromCurrent(waitForPathPicker = true) {
+    return triggerExtension('new.createFromCurrent', waitForPathPicker)
+  }
+
+  async function triggerExtension(command: string, waitForPathPicker = true) {
+    await commands.executeCommand(command)
 
     if (waitForPathPicker) {
       while (!isPickerAvailable() || picker?.busy) {
@@ -175,10 +190,12 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     pickerInputValueEqual,
     pickerMenuItemsEqual,
     pickWithAutoCompletion,
+    pickWithInputValue,
     pickWithMenuItem,
     setInputValue,
     triggerAutoCompletion,
-    triggerExtension,
+    triggerCreate,
+    triggerCreateFromCurrent,
   })
 
   await commands.executeCommand('workbench.action.closeAllEditors')
@@ -244,8 +261,10 @@ interface WithExtensionHelpers {
   pickerInputValueEqual: (expectedInputValue: string) => boolean
   pickerMenuItemsEqual: (expectedMenuItems: (string | { label: string; description: string })[]) => boolean
   pickWithAutoCompletion: (inputValue: string) => Promise<void>
+  pickWithInputValue: (inputValue: string) => void
   pickWithMenuItem: (menuItem: string, inputValue: string) => void
   setInputValue: (inputValue: string) => Promise<void>
   triggerAutoCompletion: () => Promise<void>
-  triggerExtension: (waitForPathPicker?: boolean) => Promise<void>
+  triggerCreate: (waitForPathPicker?: boolean) => Promise<void>
+  triggerCreateFromCurrent: (waitForPathPicker?: boolean) => Promise<void>
 }

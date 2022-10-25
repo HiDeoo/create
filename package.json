@@ -56,13 +56,18 @@
   },
   "bugs": "https://github.com/HiDeoo/new/issues",
   "activationEvents": [
-    "onCommand:new.pick"
+    "onCommand:new.create",
+    "onCommand:new.createFromCurrent"
   ],
   "contributes": {
     "commands": [
       {
-        "command": "new.pick",
+        "command": "new.create",
         "title": "// TODO"
+      },
+      {
+        "command": "new.createFromCurrent",
+        "title": "// TODO 2 with conditions"
       }
     ],
     "keybindings": [
