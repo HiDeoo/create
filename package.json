@@ -14,8 +14,7 @@
   },
   "dependencies": {
     "braces": "3.0.2",
-    "fast-glob": "3.2.12",
-    "tiny-invariant": "1.3.1"
+    "fast-glob": "3.2.12"
   },
   "devDependencies": {
     "@hideoo/eslint-config": "0.9.0",
@@ -39,6 +38,7 @@
     "prettier": "2.7.1",
     "rimraf": "3.0.2",
     "sinon": "14.0.1",
+    "tiny-invariant": "1.3.1",
     "typescript": "4.8.4"
   },
   "engines": {
@@ -62,21 +62,38 @@
   "contributes": {
     "commands": [
       {
+        "category": "New",
         "command": "new.create",
-        "title": "// TODO"
+        "title": "New file(s) & folder(s)"
       },
       {
+        "category": "New",
         "command": "new.createFromCurrent",
-        "title": "// TODO 2 with conditions"
+        "title": "Relative new file(s) & folder(s)"
       }
     ],
     "keybindings": [
+      {
+        "command": "new.create",
+        "key": "ctrl+alt+o",
+        "mac": "cmd+alt+o"
+      },
+      {
+        "command": "new.createFromCurrent",
+        "key": "ctrl+alt+shift+o",
+        "mac": "cmd+alt+shift+o"
+      },
       {
         "key": "tab",
         "command": "new.autoComplete",
         "when": "new.autoCompletionAvailable"
       }
     ]
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   },
   "displayName": "New",
   "prettier": "@hideoo/prettier-config",
