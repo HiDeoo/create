@@ -374,6 +374,17 @@ describe('with a single-folder workspace', () => {
         }
       }))
 
+    it('should ignore case when searching for matches', () =>
+      withExtension(async ({ pickerInputValueEqual, setInputValue, triggerExtension, triggerAutoCompletion }) => {
+        await triggerExtension()
+
+        await setInputValue('/F')
+
+        await triggerAutoCompletion()
+
+        expect(pickerInputValueEqual('/folder-1')).to.be.true
+      }))
+
     it('should preserve the active menu item if any when triggered', () =>
       withExtension(
         async ({ pickerInputValueEqual, pickerMenuItemsEqual, triggerExtension, triggerAutoCompletion }) => {

@@ -113,7 +113,6 @@ export class PathPicker {
       const menuSelectedItem = this.#picker.selectedItems[0]
 
       if (!menuSelectedItem || !PathPicker.isPathPickerMenuFolderItem(menuSelectedItem)) {
-        // TODO(HiDeoo) Show warning? Validation message?
         return
       }
 
@@ -124,7 +123,6 @@ export class PathPicker {
     }
 
     if (this.#picker.value.length === 0) {
-      // TODO(HiDeoo) Show warning? Validation message?
       return
     }
 

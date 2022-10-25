@@ -21,6 +21,7 @@ export async function getWorkspaceFoldersMatchingGlob(workspaceFolder: Workspace
   const excludeGlobs = await getExcludeGlobs(workspaceFolder)
 
   const folders = await glob(pattern, {
+    caseSensitiveMatch: false,
     cwd: workspaceFolder.uri.fsPath,
     dot: true,
     ignore: excludeGlobs,

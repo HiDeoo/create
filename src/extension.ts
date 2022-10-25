@@ -143,7 +143,12 @@ async function getAutoCompletionResults(request: string) {
 
   if (isRootWorkspaceRequest) {
     for (const workspaceFolder of workspaceFolders) {
-      if (path.join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder)).startsWith(request)) {
+      if (
+        path
+          .join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder))
+          .toLowerCase()
+          .startsWith(request.toLowerCase())
+      ) {
         results.push(path.join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder)))
       }
     }
