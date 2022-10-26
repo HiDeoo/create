@@ -50,7 +50,11 @@ export async function createNewFileOrFolder(fileOrFolderPath: string) {
 }
 
 export function isFolderPath(fileOrFolderPath: string) {
-  return fileOrFolderPath.endsWith(path.posix.sep)
+  return fileOrFolderPath.endsWith(path.sep)
+}
+
+export function getPosixPath(aPath: string) {
+  return aPath.replace(/\\/g, '/')
 }
 
 async function getExcludeGlobs(workspaceFolder: WorkspaceFolder) {

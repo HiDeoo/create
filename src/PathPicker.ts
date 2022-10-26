@@ -141,9 +141,9 @@ export class PathPicker {
     }
 
     if (!this.#didAutoComplete) {
-      this.onPick?.(path.join(this.#selectedMenuFolderItem?.path ?? path.posix.sep, this.#picker.value))
+      this.onPick?.(path.join(this.#selectedMenuFolderItem?.path ?? path.sep, this.#picker.value))
     } else {
-      this.onPickWithAutoCompletion?.(path.join(path.posix.sep, this.#picker.value))
+      this.onPickWithAutoCompletion?.(path.join(path.sep, this.#picker.value))
     }
 
     this.#dispose()
@@ -182,7 +182,7 @@ export class PathPicker {
       }
     }
 
-    if (!initialValue.startsWith('/')) {
+    if (!initialValue.startsWith(path.posix.sep)) {
       initialValue = `${path.posix.sep}${initialValue}`
     }
 
@@ -203,7 +203,7 @@ export class PathPicker {
     if (!this.#autoCompletionResults) {
       let request = this.#picker.value
 
-      if (request.length === 0 || !request.startsWith('/')) {
+      if (request.length === 0 || !request.startsWith(path.posix.sep)) {
         request = `${path.posix.sep}${request}`
       }
 

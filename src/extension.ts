@@ -3,7 +3,12 @@ import path from 'node:path'
 import braces from 'braces'
 import { commands, window, workspace, type WorkspaceFolder, type ExtensionContext, QuickPickItemKind } from 'vscode'
 
-import { createNewFileOrFolder, getWorkspaceFoldersMatchingGlob, getWorkspaceRecursiveFolders } from './libs/fs'
+import {
+  createNewFileOrFolder,
+  getPosixPath,
+  getWorkspaceFoldersMatchingGlob,
+  getWorkspaceRecursiveFolders,
+} from './libs/fs'
 import {
   getDocumentWorkspaceFolder,
   getWorkspaceFolderBasename,
@@ -37,11 +42,13 @@ export function activate(context: ExtensionContext): void {
 
       const menuItemPath = path.dirname(window.activeTextEditor.document.uri.fsPath)
       const menuItemRelativePath = workspace.asRelativePath(menuItemPath)
-      const menuItemLabel = menuItemRelativePath.startsWith(path.posix.sep)
-        ? isMultiRootWorkspace
-          ? path.join(path.posix.sep, path.basename(menuItemRelativePath))
-          : path.posix.sep
-        : path.join(path.posix.sep, menuItemRelativePath)
+      const menuItemLabel = getPosixPath(
+        path.isAbsolute(menuItemRelativePath)
+          ? isMultiRootWorkspace
+            ? path.join(path.sep, path.basename(menuItemRelativePath))
+            : path.sep
+          : path.join(path.sep, menuItemRelativePath)
+      )
 
       picker = PathPicker.newWithSelectedMenuItem({
         label: menuItemLabel,
@@ -89,9 +96,9 @@ function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFold
 
   const shortcuts: PathPickerMenuItem[] = workspaceFolders.map((workspaceFolder) => ({
     description: 'workspace root',
-    label: isMultiRootWorkspace
-      ? path.join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder))
-      : path.posix.sep,
+    label: getPosixPath(
+      isMultiRootWorkspace ? path.join(path.sep, getWorkspaceFolderBasename(workspaceFolder)) : path.sep
+    ),
     path: workspaceFolder.uri.fsPath,
   }))
 
@@ -102,9 +109,11 @@ function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFold
     if (activeWorkspaceFolder && activeWorkspaceFolder !== activeTextEditorPath) {
       shortcuts.push({
         description: 'active folder',
-        label: isMultiRootWorkspace
-          ? path.join(path.posix.sep, path.relative(path.dirname(activeWorkspaceFolder), activeTextEditorPath))
-          : path.join(path.posix.sep, path.relative(activeWorkspaceFolder, activeTextEditorPath)),
+        label: getPosixPath(
+          isMultiRootWorkspace
+            ? path.join(path.sep, path.relative(path.dirname(activeWorkspaceFolder), activeTextEditorPath))
+            : path.join(path.sep, path.relative(activeWorkspaceFolder, activeTextEditorPath))
+        ),
         path: activeTextEditorPath,
       })
     }
@@ -120,11 +129,13 @@ function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFold
 
 async function onPick(newPath: string) {
   try {
-    const expandedPaths = braces(newPath, { expand: true })
+    const expandedPaths = braces(getPosixPath(newPath), { expand: true })
 
     for (const expandedPath of expandedPaths) {
-      await createNewFileOrFolder(expandedPath)
-      await openFile(expandedPath)
+      const normalizedPath = path.normalize(expandedPath)
+
+      await createNewFileOrFolder(normalizedPath)
+      await openFile(normalizedPath)
     }
   } catch (error) {
     console.error(error)
@@ -164,12 +175,11 @@ async function getAutoCompletionResults(request: string) {
   if (isRootWorkspaceRequest) {
     for (const workspaceFolder of workspaceFolders) {
       if (
-        path
-          .join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder))
+        getPosixPath(path.join(path.sep, getWorkspaceFolderBasename(workspaceFolder)))
           .toLowerCase()
           .startsWith(request.toLowerCase())
       ) {
-        results.push(path.join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder)))
+        results.push(getPosixPath(path.join(path.sep, getWorkspaceFolderBasename(workspaceFolder))))
       }
     }
 
@@ -193,7 +203,9 @@ async function getAutoCompletionResults(request: string) {
 }
 
 function formatFolderLabel(folder: string, workspaceFolder: WorkspaceFolder, inMultiRootWorkspace: boolean) {
-  return inMultiRootWorkspace
-    ? path.join(path.posix.sep, getWorkspaceFolderBasename(workspaceFolder), path.posix.sep, folder)
-    : path.join(path.posix.sep, folder)
+  return getPosixPath(
+    inMultiRootWorkspace
+      ? path.join(path.sep, getWorkspaceFolderBasename(workspaceFolder), path.sep, folder)
+      : path.join(path.sep, folder)
+  )
 }

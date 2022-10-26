@@ -185,26 +185,28 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
 
   await commands.executeCommand('workbench.action.closeAllEditors')
 
-  await run({
-    isPickerAvailable,
-    pickerInputValueEqual,
-    pickerMenuItemsEqual,
-    pickWithAutoCompletion,
-    pickWithInputValue,
-    pickWithMenuItem,
-    setInputValue,
-    triggerAutoCompletion,
-    triggerCreate,
-    triggerCreateFromCurrent,
-  })
+  try {
+    await run({
+      isPickerAvailable,
+      pickerInputValueEqual,
+      pickerMenuItemsEqual,
+      pickWithAutoCompletion,
+      pickWithInputValue,
+      pickWithMenuItem,
+      setInputValue,
+      triggerAutoCompletion,
+      triggerCreate,
+      triggerCreateFromCurrent,
+    })
 
-  await commands.executeCommand('workbench.action.closeAllEditors')
+    await commands.executeCommand('workbench.action.closeAllEditors')
 
-  if (picker) {
-    picker.dispose()
+    if (picker) {
+      picker.dispose()
+    }
+  } finally {
+    createQuickPickStub.restore()
   }
-
-  createQuickPickStub.restore()
 }
 
 export async function emptyWorkspaceFolder(workspaceFolder: WorkspaceFolder) {

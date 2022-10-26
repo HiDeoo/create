@@ -38,7 +38,7 @@ export function getWorkspaceFolderMatchingPathRequest(pathRequest: string) {
   }
 
   return workspaceFolders.find((workspaceFolder) => {
-    const workspacePrefix = path.join(path.posix.sep, path.basename(workspaceFolder.uri.fsPath))
+    const workspacePrefix = path.join(path.sep, path.basename(workspaceFolder.uri.fsPath))
     const pathRequestPrefix = pathRequest.match(firstPathPortionRegex)?.groups?.['first']
 
     return workspacePrefix === pathRequestPrefix
