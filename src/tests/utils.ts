@@ -81,6 +81,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   }
 
   function pickerInputValueEqual(expectedValue: string) {
+    console.log(`pickerInputValueEqual: got '${picker?.value}' - expected '${expectedValue}'`)
     const isEqual = picker?.value === expectedValue
 
     if (!isEqual) {
@@ -158,7 +159,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   async function triggerAutoCompletion() {
     await commands.executeCommand('new.autoComplete')
 
-    await waitForTimeout(25)
+    await waitForTimeout(100)
 
     while (picker?.busy) {
       await new Promise((resolve) => setTimeout(resolve, 50))
@@ -180,6 +181,10 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
       while (!isPickerAvailable() || picker?.busy) {
         await new Promise((resolve) => setTimeout(resolve, 50))
       }
+    }
+
+    if (picker && picker.activeItems.length === 0) {
+      await commands.executeCommand('workbench.action.quickOpenSelectNext')
     }
   }
 

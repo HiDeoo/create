@@ -172,8 +172,10 @@ export class PathPicker {
 
     let initialValue = this.#picker.value
 
+    console.log('🚨 [PathPicker.ts:175] this.#picker.value.length', this.#picker.value.length)
     if (this.#picker.value.length === 0) {
       const activeMenuFolderItem = this.#picker.activeItems.find(PathPicker.#isPathPickerMenuFolderItem)
+      console.log('🚨 [PathPicker.ts:178] activeMenuFolderItem', activeMenuFolderItem)
 
       if (activeMenuFolderItem) {
         initialValue = activeMenuFolderItem.label
@@ -192,13 +194,19 @@ export class PathPicker {
   }
 
   async autoComplete(getResults: (request: string) => Promise<string[]>) {
+    console.log('>>>> autoComplete')
     if (!this.#didAutoComplete) {
       const triggerAutoCompletion = this.#setupAutoCompletion()
 
+      console.log('🚨 [PathPicker.ts:199] triggerAutoCompletion', triggerAutoCompletion)
+
       if (!triggerAutoCompletion) {
+        console.log('>>>> bailing out')
         return
       }
     }
+
+    console.log('🚨 [PathPicker.ts:203] this.#autoCompletionResults', this.#autoCompletionResults)
 
     if (!this.#autoCompletionResults) {
       let request = this.#picker.value
@@ -220,6 +228,8 @@ export class PathPicker {
       } else if (this.#autoCompletionIndex < 0) {
         this.#autoCompletionIndex = this.#autoCompletionResults.length - 1
       }
+
+      console.log('🚨 [PathPicker.ts:218] this.#autoCompletionIndex', this.#autoCompletionIndex)
 
       let completion = this.#autoCompletionResults[this.#autoCompletionIndex]
       const isSingleResult = this.#autoCompletionResults.length === 1

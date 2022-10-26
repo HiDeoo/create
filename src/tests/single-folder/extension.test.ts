@@ -364,8 +364,10 @@ describe('with a single-folder workspace', () => {
         }))
 
       it('should loop through root directories if triggered with no input value', () =>
-        withExtension(async ({ pickerInputValueEqual, triggerCreate, triggerAutoCompletion }) => {
+        withExtension(async ({ pickerInputValueEqual, triggerAutoCompletion, triggerCreate }) => {
           await triggerCreate()
+
+          await triggerAutoCompletion()
 
           for (const inputValue of ['/.github', '/folder-1', '/folder-2', '/folder-3', '/.github']) {
             await triggerAutoCompletion()
@@ -428,7 +430,6 @@ describe('with a single-folder workspace', () => {
             ])
           ).to.be.true
 
-          await commands.executeCommand('workbench.action.quickOpenSelectNext')
           await commands.executeCommand('workbench.action.quickOpenSelectNext')
           await commands.executeCommand('workbench.action.quickOpenSelectNext')
 
