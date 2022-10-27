@@ -399,7 +399,6 @@ describe('with a multi-root workspace', () => {
 
           await commands.executeCommand('workbench.action.quickOpenSelectNext')
           await commands.executeCommand('workbench.action.quickOpenSelectNext')
-          await commands.executeCommand('workbench.action.quickOpenSelectNext')
 
           await triggerAutoCompletion()
 

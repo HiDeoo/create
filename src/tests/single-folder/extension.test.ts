@@ -367,8 +367,6 @@ describe('with a single-folder workspace', () => {
         withExtension(async ({ pickerInputValueEqual, triggerAutoCompletion, triggerCreate }) => {
           await triggerCreate()
 
-          await triggerAutoCompletion()
-
           for (const inputValue of ['/.github', '/folder-1', '/folder-2', '/folder-3', '/.github']) {
             await triggerAutoCompletion()
 

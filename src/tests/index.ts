@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 
 import { runTests } from '@vscode/test-electron'
-// import glob from 'fast-glob'
+import glob from 'fast-glob'
 
 async function runTestsWithFixtures(extensionDevelopmentPath: string, suite: string) {
   const extensionTestsPath = path.resolve(__dirname, suite)
@@ -54,9 +54,7 @@ async function run() {
   try {
     const extensionDevelopmentPath = path.resolve(__dirname, '../..')
 
-    // FIXME(HiDeoo)
-    const testSuites = ['single-folder']
-    // const testSuites = await glob('*', { cwd: __dirname, onlyDirectories: true })
+    const testSuites = await glob('*', { cwd: __dirname, onlyDirectories: true })
 
     for (const testSuite of testSuites) {
       await runTestsWithFixtures(extensionDevelopmentPath, testSuite)

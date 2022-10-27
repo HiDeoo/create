@@ -58,7 +58,6 @@ export function activate(context: ExtensionContext): void {
       picker.onDispose = () => (picker = undefined)
     }),
     commands.registerCommand('new.autoComplete', () => {
-      console.log('# new.autoComplete')
       picker?.autoComplete(getAutoCompletionResults)
     })
   )

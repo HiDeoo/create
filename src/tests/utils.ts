@@ -81,7 +81,6 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   }
 
   function pickerInputValueEqual(expectedValue: string) {
-    console.log(`pickerInputValueEqual: got '${picker?.value}' - expected '${expectedValue}'`)
     const isEqual = picker?.value === expectedValue
 
     if (!isEqual) {
