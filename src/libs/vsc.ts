@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import { type TextDocument, ViewColumn, window, workspace, type WorkspaceFolder, type TextEditor } from 'vscode'
 
-import { isFolderPath } from './fs'
+import { getPosixPath, isFolderPath } from './fs'
 
 const firstPathPortionRegex = /^(?<first>\/[^/]*)/
 
@@ -38,7 +38,7 @@ export function getWorkspaceFolderMatchingPathRequest(pathRequest: string) {
   }
 
   return workspaceFolders.find((workspaceFolder) => {
-    const workspacePrefix = path.join(path.sep, path.basename(workspaceFolder.uri.fsPath))
+    const workspacePrefix = getPosixPath(path.join(path.sep, path.basename(workspaceFolder.uri.fsPath)))
     const pathRequestPrefix = pathRequest.match(firstPathPortionRegex)?.groups?.['first']
 
     return workspacePrefix === pathRequestPrefix

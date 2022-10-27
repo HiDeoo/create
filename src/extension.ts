@@ -145,7 +145,7 @@ async function onPick(newPath: string) {
 }
 
 function onPickWithAutoCompletion(newPathRequest: string) {
-  const workspaceFolder = getWorkspaceFolderMatchingPathRequest(newPathRequest)
+  const workspaceFolder = getWorkspaceFolderMatchingPathRequest(getPosixPath(newPathRequest))
 
   if (!workspaceFolder) {
     window.showErrorMessage(`No workspace folder found to create '${newPathRequest}'.`)

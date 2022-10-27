@@ -147,7 +147,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     if (picker) {
       picker.value = inputValue
 
-      await waitForTimeout(25)
+      await waitForTimeout(50)
 
       if (pickerChangeValueEventEmitter) {
         pickerChangeValueEventEmitter?.fire(inputValue)
@@ -158,7 +158,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   async function triggerAutoCompletion() {
     await commands.executeCommand('new.autoComplete')
 
-    await waitForTimeout(100)
+    await waitForTimeout(50)
 
     while (picker?.busy) {
       await new Promise((resolve) => setTimeout(resolve, 50))
@@ -221,7 +221,7 @@ export async function emptyWorkspaceFolder(workspaceFolder: WorkspaceFolder) {
     const stats = await fs.promises.stat(fileOrFolderPath)
 
     await (stats.isDirectory()
-      ? fs.promises.rm(fileOrFolderPath, { recursive: true })
+      ? fs.promises.rm(fileOrFolderPath, { force: true, maxRetries: 5, recursive: true })
       : fs.promises.unlink(fileOrFolderPath))
   }
 }
