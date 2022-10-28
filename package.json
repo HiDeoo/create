@@ -2,7 +2,7 @@
   "name": "new",
   "version": "0.0.1",
   "license": "MIT",
-  "description": "",
+  "description": "Quickly create new file(s) & folder(s)",
   "author": "HiDeoo <github@hideoo.dev> (https://hideoo.dev)",
   "main": "dist/extension.js",
   "scripts": {
@@ -50,9 +50,14 @@
   },
   "packageManager": "pnpm@7.13.4",
   "private": true,
-  "publisher": "hideoo",
   "sideEffects": false,
-  "keywords": [],
+  "keywords": [
+    "new",
+    "file",
+    "folder",
+    "autocomplete",
+    "fuzzy"
+  ],
   "homepage": "https://github.com/HiDeoo/new",
   "repository": {
     "type": "git",
@@ -100,7 +105,27 @@
     }
   },
   "displayName": "New",
+  "publisher": "hideoo",
+  "categories": [
+    "Other"
+  ],
   "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#7a8194",
+    "theme": "dark"
+  },
+  "badges": [
+    {
+      "url": "https://github.com/HiDeoo/new/actions/workflows/integration.yml/badge.svg",
+      "href": "https://github.com/HiDeoo/new/actions/workflows/integration.yml",
+      "description": "Integration Status"
+    },
+    {
+      "url": "https://badgen.net/github/license/hideoo/new",
+      "href": "https://github.com/HiDeoo/new/blob/main/LICENSE",
+      "description": "License"
+    }
+  ],
   "prettier": "@hideoo/prettier-config",
   "lint-staged": {
     "**/*": "prettier -w -u --cache",
