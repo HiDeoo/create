@@ -161,7 +161,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
     await waitForTimeout(50)
 
     while (picker?.busy) {
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      await waitForTimeout(50)
     }
   }
 
@@ -178,7 +178,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
 
     if (waitForPathPicker) {
       while (!isPickerAvailable() || picker?.busy) {
-        await new Promise((resolve) => setTimeout(resolve, 50))
+        await waitForTimeout(50)
       }
     }
 
@@ -234,7 +234,7 @@ export async function expectNewFileOrFolder(
   const fileOrFolderPath = getWorkspaceRelativePath(relativeFileOrFolderPath, workspaceFolder)
 
   while (!fs.existsSync(fileOrFolderPath)) {
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await waitForTimeout(50)
   }
 
   invariant(
@@ -248,7 +248,7 @@ export async function expectOpenedFile(relativeFilePath: string, workspaceFolder
   const filePath = getWorkspaceRelativePath(relativeFilePath, workspaceFolder)
 
   while (!workspace.textDocuments.some((document) => document.fileName === filePath)) {
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await waitForTimeout(50)
   }
 }
 
