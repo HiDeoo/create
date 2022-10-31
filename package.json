@@ -2,7 +2,7 @@
   "name": "new",
   "version": "0.0.1",
   "license": "MIT",
-  "description": "Quickly create new file(s) & folder(s)",
+  "description": "Quickly create new File(s) & Folder(s).",
   "author": "HiDeoo <github@hideoo.dev> (https://hideoo.dev)",
   "main": "dist/extension.js",
   "scripts": {
