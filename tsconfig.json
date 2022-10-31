@@ -1,0 +1,7 @@
+{
+  "extends": "@hideoo/tsconfig",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "dist"
+  }
+}

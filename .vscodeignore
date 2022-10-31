@@ -1,0 +1,12 @@
+.eslintcache
+.github
+.gitignore
+.husky
+.prettierignore
+.vscode
+esbuild.config.mjs
+fixtures
+new-**.vsix
+pnpm-lock.yaml
+src
+tsconfig.json
