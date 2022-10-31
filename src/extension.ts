@@ -23,7 +23,7 @@ export function activate(context: ExtensionContext): void {
   let picker: PathPicker | undefined
 
   context.subscriptions.push(
-    commands.registerCommand('new.create', () => {
+    commands.registerCommand('create.new', () => {
       if (!isWorkspaceWithFolders(workspace.workspaceFolders)) {
         return
       }
@@ -33,7 +33,7 @@ export function activate(context: ExtensionContext): void {
       picker.onPickWithAutoCompletion = onPickWithAutoCompletion
       picker.onDispose = () => (picker = undefined)
     }),
-    commands.registerCommand('new.createFromCurrent', () => {
+    commands.registerCommand('create.newFromCurrent', () => {
       if (!isWorkspaceWithFolders(workspace.workspaceFolders) || !isFileTextEditor(window.activeTextEditor)) {
         return
       }
@@ -57,7 +57,7 @@ export function activate(context: ExtensionContext): void {
       picker.onPick = onPick
       picker.onDispose = () => (picker = undefined)
     }),
-    commands.registerCommand('new.autoComplete', () => {
+    commands.registerCommand('create.autoComplete', () => {
       picker?.autoComplete(getAutoCompletionResults)
     })
   )

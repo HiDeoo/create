@@ -156,7 +156,7 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   }
 
   async function triggerAutoCompletion() {
-    await commands.executeCommand('new.autoComplete')
+    await commands.executeCommand('create.autoComplete')
 
     await waitForTimeout(50)
 
@@ -166,11 +166,11 @@ export async function withExtension(run: (withExtensionHelpers: WithExtensionHel
   }
 
   function triggerCreate(waitForPathPicker = true) {
-    return triggerExtension('new.create', waitForPathPicker)
+    return triggerExtension('create.new', waitForPathPicker)
   }
 
   function triggerCreateFromCurrent(waitForPathPicker = true) {
-    return triggerExtension('new.createFromCurrent', waitForPathPicker)
+    return triggerExtension('create.newFromCurrent', waitForPathPicker)
   }
 
   async function triggerExtension(command: string, waitForPathPicker = true) {

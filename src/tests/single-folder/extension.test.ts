@@ -23,7 +23,7 @@ afterEach(async () => {
 })
 
 describe('with a single-folder workspace', () => {
-  describe('new.create', () => {
+  describe('create.new', () => {
     describe('path picker fuzzy matching', () => {
       describe('with files.exclude', () => {
         it('should list ordered folders', () =>
@@ -636,7 +636,7 @@ describe('with a single-folder workspace', () => {
     })
   })
 
-  describe('new.createFromCurrent', () => {
+  describe('create.newFromCurrent', () => {
     it('should create a file at the workspace root', () =>
       withExtension(async ({ pickWithInputValue, triggerCreateFromCurrent }) => {
         await openFile(path.join(workspaceFolder.uri.fsPath, '/file'))

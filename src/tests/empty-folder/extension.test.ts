@@ -10,7 +10,7 @@ const workspaceFolder = workspace.workspaceFolders?.[0]
 assert(workspaceFolder, 'The workspace folder is not defined.')
 
 describe('with an empty folder workspace', () => {
-  describe('new.create', () => {
+  describe('create.new', () => {
     describe('path picker fuzzy matching', () => {
       it('should list only the root folder with no separator', () =>
         withExtension(async ({ pickerMenuItemsEqual, triggerCreate }) => {
@@ -32,7 +32,7 @@ describe('with an empty folder workspace', () => {
     })
   })
 
-  describe('new.createFromCurrent', () => {
+  describe('create.newFromCurrent', () => {
     it('should bail out and show an error with no file opened', () =>
       withExtension(async ({ isPickerAvailable, triggerCreateFromCurrent }) => {
         const showErrorMessageSpy = spy(window, 'showErrorMessage') as unknown as SinonSpy<

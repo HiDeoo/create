@@ -98,7 +98,7 @@ export class PathPicker {
   }
 
   #setAutoCompletionAvailable(active: boolean) {
-    commands.executeCommand('setContext', 'new.autoCompletionAvailable', active)
+    commands.executeCommand('setContext', 'create.autoCompletionAvailable', active)
   }
 
   #setInputValue(value: string, ignoreChange = false) {
