@@ -1,5 +1,5 @@
 {
-  "name": "new",
+  "name": "create",
   "version": "0.1.0",
   "license": "MIT",
   "description": "Quickly create new File(s) & Folder(s).",
@@ -58,44 +58,44 @@
     "autocomplete",
     "fuzzy"
   ],
-  "homepage": "https://github.com/HiDeoo/new",
+  "homepage": "https://github.com/HiDeoo/create",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HiDeoo/new.git"
+    "url": "https://github.com/HiDeoo/create.git"
   },
-  "bugs": "https://github.com/HiDeoo/new/issues",
+  "bugs": "https://github.com/HiDeoo/create/issues",
   "activationEvents": [
-    "onCommand:new.create",
-    "onCommand:new.createFromCurrent"
+    "onCommand:create.new",
+    "onCommand:create.newFromCurrent"
   ],
   "contributes": {
     "commands": [
       {
-        "category": "New",
-        "command": "new.create",
+        "category": "Create",
+        "command": "create.new",
         "title": "New file(s) & folder(s)"
       },
       {
-        "category": "New",
-        "command": "new.createFromCurrent",
+        "category": "Create",
+        "command": "create.newFromCurrent",
         "title": "Relative new file(s) & folder(s)"
       }
     ],
     "keybindings": [
       {
-        "command": "new.create",
+        "command": "create.new",
         "key": "ctrl+alt+o",
         "mac": "cmd+alt+o"
       },
       {
-        "command": "new.createFromCurrent",
+        "command": "create.newFromCurrent",
         "key": "ctrl+alt+shift+o",
         "mac": "cmd+alt+shift+o"
       },
       {
         "key": "tab",
-        "command": "new.autoComplete",
-        "when": "new.autoCompletionAvailable"
+        "command": "create.autoComplete",
+        "when": "create.autoCompletionAvailable"
       }
     ]
   },
@@ -104,7 +104,7 @@
       "supported": true
     }
   },
-  "displayName": "New",
+  "displayName": "Create",
   "publisher": "hideoo",
   "categories": [
     "Other"
@@ -116,13 +116,13 @@
   },
   "badges": [
     {
-      "url": "https://github.com/HiDeoo/new/actions/workflows/integration.yml/badge.svg",
-      "href": "https://github.com/HiDeoo/new/actions/workflows/integration.yml",
+      "url": "https://github.com/HiDeoo/create/actions/workflows/integration.yml/badge.svg",
+      "href": "https://github.com/HiDeoo/create/actions/workflows/integration.yml",
       "description": "Integration Status"
     },
     {
-      "url": "https://badgen.net/github/license/hideoo/new",
-      "href": "https://github.com/HiDeoo/new/blob/main/LICENSE",
+      "url": "https://badgen.net/github/license/hideoo/create",
+      "href": "https://github.com/HiDeoo/create/blob/main/LICENSE",
       "description": "License"
     }
   ],

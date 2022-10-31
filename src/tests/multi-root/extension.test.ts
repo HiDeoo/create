@@ -27,7 +27,7 @@ afterEach(async () => {
 })
 
 describe('with a multi-root workspace', () => {
-  describe('new.create', () => {
+  describe('create.new', () => {
     describe('path picker fuzzy matching', () => {
       describe('with files.exclude', () => {
         it('should list ordered folders with the workspace prefix', () =>
@@ -640,7 +640,7 @@ describe('with a multi-root workspace', () => {
     })
   })
 
-  describe('new.createFromCurrent', () => {
+  describe('create.newFromCurrent', () => {
     it('should create a file at the root of the first workspace folder', () =>
       withExtension(async ({ pickWithInputValue, triggerCreateFromCurrent }) => {
         await openFile(path.join(workspaceFolderA.uri.fsPath, '/file-1'))

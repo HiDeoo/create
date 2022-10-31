@@ -6,7 +6,7 @@
 .vscode
 esbuild.config.mjs
 fixtures
-new-**.vsix
+create-**.vsix
 pnpm-lock.yaml
 src
 tsconfig.json

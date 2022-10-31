@@ -1,26 +1,26 @@
 <div align="center">
-  <img alt="New extension icon" src="https://i.imgur.com/R2xcaBh.png" width="128" />
-  <h1 align="center">New</h1>
+  <img alt="Create extension icon" src="https://i.imgur.com/R2xcaBh.png" width="128" />
+  <h1 align="center">Create</h1>
 </div>
 
 <div align="center">
   <p><strong>Quickly create new File(s) & Folder(s).</strong></p>
   <p>
-    <a href="https://github.com/HiDeoo/new/actions/workflows/integration.yml">
-      <img alt="Integration Status" src="https://github.com/HiDeoo/new/actions/workflows/integration.yml/badge.svg" />
+    <a href="https://github.com/HiDeoo/create/actions/workflows/integration.yml">
+      <img alt="Integration Status" src="https://github.com/HiDeoo/create/actions/workflows/integration.yml/badge.svg" />
     </a>
-    <a href="https://github.com/HiDeoo/new/blob/main/LICENSE">
-      <img alt="License" src="https://badgen.net/github/license/HiDeoo/new" />
-    </a>
-  </p>
-  <p>
-    <a href="https://i.imgur.com/9IvyqoS.gif" title="Demo of the New extension using fuzzy matching">
-      <img alt="Demo of the New extension using fuzzy matching" src="https://i.imgur.com/9IvyqoS.gif" width="675" />
+    <a href="https://github.com/HiDeoo/create/blob/main/LICENSE">
+      <img alt="License" src="https://badgen.net/github/license/HiDeoo/create" />
     </a>
   </p>
   <p>
-    <a href="https://i.imgur.com/7OnFzbj.gif" title="Demo of the New extension using terminal-style autocomplete">
-      <img alt="Demo of the New extension using terminal-style autocomplete" src="https://i.imgur.com/7OnFzbj.gif" width="675" />
+    <a href="https://i.imgur.com/9IvyqoS.gif" title="Demo of the Create extension using fuzzy matching">
+      <img alt="Demo of the Create extension using fuzzy matching" src="https://i.imgur.com/9IvyqoS.gif" width="675" />
+    </a>
+  </p>
+  <p>
+    <a href="https://i.imgur.com/7OnFzbj.gif" title="Demo of the Create extension using terminal-style autocomplete">
+      <img alt="Demo of the Create extension using terminal-style autocomplete" src="https://i.imgur.com/7OnFzbj.gif" width="675" />
     </a>
   </p>
 </div>
@@ -57,4 +57,4 @@ This extension also provides various [configurable](https://code.visualstudio.co
 
 Licensed under the MIT License, Copyright © HiDeoo.
 
-See [LICENSE](https://github.com/HiDeoo/new/blob/main/LICENSE) for more information.
+See [LICENSE](https://github.com/HiDeoo/create/blob/main/LICENSE) for more information.

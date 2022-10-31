@@ -13,7 +13,7 @@ async function runTestsWithFixtures(extensionDevelopmentPath: string, suite: str
   let testDirectory: string | undefined
 
   if (suite !== 'no-folder') {
-    testDirectory = await fs.mkdtemp(path.join(os.tmpdir(), `new-${suite}-`))
+    testDirectory = await fs.mkdtemp(path.join(os.tmpdir(), `create-${suite}-`))
 
     if (suite === 'single-folder' || suite === 'empty-folder') {
       // Test a workspace with a single (empty or not) folder.
