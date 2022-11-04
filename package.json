@@ -10,9 +10,9 @@
     "lint": "prettier -c . && eslint . --cache --max-warnings=0 && tsc --noEmit",
     "test": "pnpm clean && tsc && node dist/tests/index.js",
     "clean": "rimraf dist",
-    "vscode:ls": "vsce ls --no-dependencies",
-    "vscode:package": "vsce package --no-dependencies",
-    "vscode:publish": "vsce publish --no-dependencies",
+    "vscode:ls": "pnpx vsce ls --no-dependencies",
+    "vscode:package": "pnpx vsce package --no-dependencies",
+    "vscode:publish": "pnpx vsce publish --no-dependencies",
     "vscode:prepublish": "pnpm build",
     "prepare": "husky install"
   },
