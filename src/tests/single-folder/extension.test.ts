@@ -43,6 +43,7 @@ describe('with a single-folder workspace', () => {
                 '/folder-2/folder-2-2',
                 '/folder-2/folder-2-2/folder-2-2-1',
                 '/folder-2/folder-2-2/folder-2-2-2',
+                '/folder-2/folder-2-2/folder-2-2-2/folder-2-2-2-1',
                 '/folder-2/folder-2-2/random',
                 '/folder-3',
               ])
@@ -69,6 +70,7 @@ describe('with a single-folder workspace', () => {
                 '/folder-2/folder-2-2',
                 '/folder-2/folder-2-2/folder-2-2-1',
                 '/folder-2/folder-2-2/folder-2-2-2',
+                '/folder-2/folder-2-2/folder-2-2-2/folder-2-2-2-1',
                 '/folder-2/folder-2-2/random',
                 '/folder-3',
               ])
@@ -94,6 +96,7 @@ describe('with a single-folder workspace', () => {
                 '/folder-2/folder-2-2',
                 '/folder-2/folder-2-2/folder-2-2-1',
                 '/folder-2/folder-2-2/folder-2-2-2',
+                '/folder-2/folder-2-2/folder-2-2-2/folder-2-2-2-1',
                 '/folder-2/folder-2-2/random',
                 '/folder-3',
               ])
@@ -111,7 +114,7 @@ describe('with a single-folder workspace', () => {
           # a comment
           .file-3-1
           random
-          /folder-2/folder-2-2/folder-2-2-2
+          /folder-2/folder-2-2/folder-2-2-2/
         `
           )
         })
@@ -423,6 +426,7 @@ describe('with a single-folder workspace', () => {
               '/folder-2/folder-2-2',
               '/folder-2/folder-2-2/folder-2-2-1',
               '/folder-2/folder-2-2/folder-2-2-2',
+              '/folder-2/folder-2-2/folder-2-2-2/folder-2-2-2-1',
               '/folder-2/folder-2-2/random',
               '/folder-3',
             ])

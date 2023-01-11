@@ -89,7 +89,11 @@ async function getGitignoreExcludeGlobs(workspaceFolder: WorkspaceFolder) {
         continue
       }
 
-      excludeGlobs.push(gitignoreEntry.startsWith(path.posix.sep) ? gitignoreEntry.slice(1) : `**/${gitignoreEntry}`)
+      let excludeGlob = gitignoreEntry.startsWith(path.posix.sep) ? gitignoreEntry.slice(1) : `**/${gitignoreEntry}`
+      // If there is a separator at the end of the pattern then the pattern should match directories.
+      excludeGlob = excludeGlob.endsWith(path.posix.sep) ? `${excludeGlob}**` : excludeGlob
+
+      excludeGlobs.push(excludeGlob)
     }
   } catch {
     // We can safely ignore this error if the file doesn't exist or is not readable.

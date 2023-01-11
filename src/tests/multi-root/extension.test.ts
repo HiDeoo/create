@@ -45,6 +45,7 @@ describe('with a multi-root workspace', () => {
                 '/folder-2/folder-2-2',
                 '/folder-2/folder-2-2/folder-2-2-1',
                 '/folder-2/folder-2-2/folder-2-2-2',
+                '/folder-2/folder-2-2/folder-2-2-2/folder-2-2-2-1',
                 '/folder-2/folder-2-2/random',
               ])
             ).to.be.true
@@ -68,6 +69,7 @@ describe('with a multi-root workspace', () => {
                 '/folder-2/folder-2-2',
                 '/folder-2/folder-2-2/folder-2-2-1',
                 '/folder-2/folder-2-2/folder-2-2-2',
+                '/folder-2/folder-2-2/folder-2-2-2/folder-2-2-2-1',
                 '/folder-2/folder-2-2/random',
               ])
             ).to.be.true
@@ -90,6 +92,7 @@ describe('with a multi-root workspace', () => {
                 '/folder-2/folder-2-2',
                 '/folder-2/folder-2-2/folder-2-2-1',
                 '/folder-2/folder-2-2/folder-2-2-2',
+                '/folder-2/folder-2-2/folder-2-2-2/folder-2-2-2-1',
                 '/folder-2/folder-2-2/random',
               ])
             ).to.be.true
@@ -393,6 +396,7 @@ describe('with a multi-root workspace', () => {
               '/folder-2/folder-2-2',
               '/folder-2/folder-2-2/folder-2-2-1',
               '/folder-2/folder-2-2/folder-2-2-2',
+              '/folder-2/folder-2-2/folder-2-2-2/folder-2-2-2-1',
               '/folder-2/folder-2-2/random',
             ])
           ).to.be.true
