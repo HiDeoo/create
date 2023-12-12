@@ -107,7 +107,7 @@ function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFold
     const activeTextEditorPath = path.dirname(window.activeTextEditor.document.uri.fsPath)
 
     if (activeWorkspaceFolder && activeWorkspaceFolder !== activeTextEditorPath) {
-      shortcuts.push({
+      shortcuts.unshift({
         description: 'active folder',
         label: getPosixPath(
           isMultiRootWorkspace

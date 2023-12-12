@@ -58,8 +58,8 @@ describe('with a single-folder workspace', () => {
 
             expect(
               pickerMenuItemsEqual([
-                { label: '/', description: 'workspace root' },
                 { label: '/folder-2/folder-2-2', description: 'active folder' },
+                { label: '/', description: 'workspace root' },
                 '---',
                 '/.github',
                 '/folder-1',

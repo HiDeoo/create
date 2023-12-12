@@ -59,9 +59,9 @@ describe('with a multi-root workspace', () => {
 
             expect(
               pickerMenuItemsEqual([
+                { label: '/folder-2/folder-2-2', description: 'active folder' },
                 { label: '/folder-1', description: 'workspace root' },
                 { label: '/folder-2', description: 'workspace root' },
-                { label: '/folder-2/folder-2-2', description: 'active folder' },
                 '---',
                 '/folder-1/random',
                 '/folder-1/random/random-nested',
