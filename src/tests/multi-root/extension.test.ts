@@ -75,7 +75,7 @@ describe('with a multi-root workspace', () => {
             ).to.be.true
           }))
 
-        it('should list ordered folders without the active folder shortcut if the current document is at the root of the proper workspace', () =>
+        it('should list ordered folders with the active folder shortcut on top if the current document is at the root of the proper workspace', () =>
           withExtension(async ({ pickerMenuItemsEqual, triggerCreate }) => {
             await openFile(path.join(workspaceFolderA.uri.fsPath, 'file-1'))
 
@@ -83,7 +83,7 @@ describe('with a multi-root workspace', () => {
 
             expect(
               pickerMenuItemsEqual([
-                { label: '/folder-1', description: 'workspace root' },
+                { label: '/folder-1', description: 'active folder' },
                 { label: '/folder-2', description: 'workspace root' },
                 '---',
                 '/folder-1/random',
