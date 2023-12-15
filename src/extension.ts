@@ -94,19 +94,16 @@ async function getPathPickerMenuItems(workspaceFolders: readonly WorkspaceFolder
 function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFolder[]): PathPickerMenuItem[] {
   const isMultiRootWorkspace = workspaceFolders.length > 1
 
-  const shortcuts: PathPickerMenuItem[] = workspaceFolders.map((workspaceFolder) => ({
-    description: 'workspace root',
-    label: getPosixPath(
-      isMultiRootWorkspace ? path.join(path.sep, getWorkspaceFolderBasename(workspaceFolder)) : path.sep
-    ),
-    path: workspaceFolder.uri.fsPath,
-  }))
+  const shortcuts: PathPickerMenuItem[] = []
+  let hasActiveFolder = false
 
   if (window.activeTextEditor) {
     const activeWorkspaceFolder = getDocumentWorkspaceFolder(window.activeTextEditor.document)
     const activeTextEditorPath = path.dirname(window.activeTextEditor.document.uri.fsPath)
 
-    if (activeWorkspaceFolder && activeWorkspaceFolder !== activeTextEditorPath) {
+    if (activeWorkspaceFolder) {
+      hasActiveFolder = true
+
       shortcuts.push({
         description: 'active folder',
         label: getPosixPath(
@@ -119,10 +116,21 @@ function getPathPickerMenuItemShortcuts(workspaceFolders: readonly WorkspaceFold
     }
   }
 
-  shortcuts.push({
-    kind: QuickPickItemKind.Separator,
-    label: '',
-  })
+  shortcuts.push(
+    ...workspaceFolders
+      .map((workspaceFolder) => ({
+        description: 'workspace root',
+        label: getPosixPath(
+          isMultiRootWorkspace ? path.join(path.sep, getWorkspaceFolderBasename(workspaceFolder)) : path.sep
+        ),
+        path: workspaceFolder.uri.fsPath,
+      }))
+      .filter((item) => !hasActiveFolder || item.label !== shortcuts[0]?.label),
+    {
+      kind: QuickPickItemKind.Separator,
+      label: '',
+    }
+  )
 
   return shortcuts
 }

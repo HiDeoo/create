@@ -58,8 +58,8 @@ describe('with a single-folder workspace', () => {
 
             expect(
               pickerMenuItemsEqual([
-                { label: '/', description: 'workspace root' },
                 { label: '/folder-2/folder-2-2', description: 'active folder' },
+                { label: '/', description: 'workspace root' },
                 '---',
                 '/.github',
                 '/folder-1',
@@ -77,7 +77,7 @@ describe('with a single-folder workspace', () => {
             ).to.be.true
           }))
 
-        it('should list ordered folders without the active folder shortcut if the current document is at the root', () =>
+        it('should list ordered folders with the active folder shortcut on top if the current document is at the root', () =>
           withExtension(async ({ pickerMenuItemsEqual, triggerCreate }) => {
             await openFile(path.join(workspaceFolder.uri.fsPath, 'file'))
 
@@ -85,7 +85,7 @@ describe('with a single-folder workspace', () => {
 
             expect(
               pickerMenuItemsEqual([
-                { label: '/', description: 'workspace root' },
+                { label: '/', description: 'active folder' },
                 '---',
                 '/.github',
                 '/folder-1',

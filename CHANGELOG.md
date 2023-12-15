@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.3.0
+
+### 🚀 Features
+
+- Display the active folder at the top of the shortcut list.
+
 ## v0.2.0
 
 ### 🐞 Bug Fixes
