@@ -31,7 +31,7 @@
     "@types/node": "16.11.65",
     "@types/sinon": "10.0.13",
     "@types/vscode": "1.70.0",
-    "@vscode/test-electron": "2.1.5",
+    "@vscode/test-electron": "2.3.8",
     "chai": "4.3.6",
     "common-tags": "1.8.2",
     "esbuild": "0.15.10",
